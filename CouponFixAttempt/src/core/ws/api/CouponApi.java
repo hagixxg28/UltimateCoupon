@@ -77,8 +77,9 @@ public class CouponApi {
 	@Path("/date")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Collection<Coupon> getCouponsByDate(@QueryParam("date") Date date) throws FacadeException {
+	public Collection<Coupon> getCouponsByDate(@QueryParam("date") Long dateLong) throws FacadeException {
 		CouponLogic logic = new CouponLogic();
+		Date date = new Date(dateLong);
 		return logic.getAllCouponByDate(date);
 	}
 
@@ -116,9 +117,10 @@ public class CouponApi {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Collection<Coupon> getCouponsForCompanyByDate(@PathParam("companyId") long companyId,
-			@QueryParam("date") Date date) throws FacadeException {
+			@QueryParam("date") Long dateLong) throws FacadeException {
 
 		CouponLogic logic = new CouponLogic();
+		Date date = new Date(dateLong);
 		return logic.getAllCouponByDateForCompany(date, companyId);
 	}
 
@@ -159,9 +161,10 @@ public class CouponApi {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Collection<Coupon> getCouponsForCustomerByDate(@PathParam("customerId") long customerId,
-			@QueryParam("date") Date date) throws FacadeException {
+			@QueryParam("date") long dateLong) throws FacadeException {
 
 		CouponLogic logic = new CouponLogic();
+		Date date = new Date(dateLong);
 		return logic.getAllCouponByDateForCustomer(date, customerId);
 	}
 
@@ -178,8 +181,8 @@ public class CouponApi {
 
 	@GET
 	@Path("/purchase/{couponId}/{customerId}")
-	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
 	public void purchaseCoupon(@PathParam("couponId") long couponId, @PathParam("customerId") long customerId)
 			throws FacadeException {
 		CouponLogic logic = new CouponLogic();

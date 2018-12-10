@@ -164,12 +164,12 @@ public class CouponLogic {
 		Coupon coup = null;
 		try {
 			coup = coupDb.getCoupon(couponId);
-		} catch (DaoException e1) {
-			throw new NoCouponsException("No coupon with this Id was found");
-		}
 
 		if (coup.getAmount() <= 0) {
 			throw new OutOfCouponsException("There are no coupons left to buy");
+		}
+		} catch (DaoException e1) {
+			throw new NoCouponsException("No coupon with this Id was found");
 		}
 		try {
 

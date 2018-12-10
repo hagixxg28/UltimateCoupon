@@ -43,35 +43,35 @@ public enum CouponType {
 		String str;
 		switch (type) {
 		case RESTURANTS:
-			str = "'resturants'";
+			str = "resturants";
 			return str;
 
 		case ELECTRICITY:
-			str = "'electricity'";
+			str = "electricity";
 			return str;
 
 		case FOOD:
-			str = "'food'";
+			str = "food";
 			return str;
 
 		case HEALTH:
-			str = "'health'";
+			str = "health";
 			return str;
 
 		case SPORTS:
-			str = "'sports'";
+			str = "sports";
 			return str;
 
 		case CAMPING:
-			str = "'camping'";
+			str = "camping";
 			return str;
 
 		case TRAVELING:
-			str = "'traveling'";
+			str = "traveling";
 			return str;
 
 		default:
-			str = "'other'";
+			str = "other";
 			return str;
 
 		}

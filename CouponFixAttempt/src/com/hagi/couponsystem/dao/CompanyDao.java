@@ -187,6 +187,7 @@ public class CompanyDao implements ICompanyDao {
 			}
 
 		} catch (SQLException e) {
+			System.out.println("exists fucked up");
 			throw new DaoException("Error occurred at companyExists method");
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
