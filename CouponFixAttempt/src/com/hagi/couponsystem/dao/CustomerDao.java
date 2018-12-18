@@ -8,25 +8,31 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.hagi.couponsystem.Enums.ErrorTypes;
 import com.hagi.couponsystem.Idao.ICustomerDao;
 import com.hagi.couponsystem.Utils.Extractor;
 import com.hagi.couponsystem.Utils.UtilSQLcloser;
 import com.hagi.couponsystem.beans.Customer;
 import com.hagi.couponsystem.connectionpool.ConnectionPool;
-import com.hagi.couponsystem.exception.dao.CustomerAlreadyExistsException;
-import com.hagi.couponsystem.exception.dao.CustomerDoesNotExistException;
-import com.hagi.couponsystem.exception.dao.DaoException;
-import com.hagi.couponsystem.exception.dao.NoCustomersException;
+import com.hagi.couponsystem.exceptions.ApplicationException;
 
 public class CustomerDao implements ICustomerDao {
 	private ConnectionPool pool = ConnectionPool.getPool();
+	private static CustomerDao instance;
 
-	public CustomerDao() {
+	private CustomerDao() {
 		super();
 	}
 
+	public static CustomerDao getInstance() {
+		if (instance == null) {
+			instance = new CustomerDao();
+		}
+		return instance;
+	}
+
 	@Override
-	public void createCustomer(Customer cust) throws DaoException {
+	public void createCustomer(Customer cust) throws ApplicationException {
 		String sql = "INSERT INTO customer  (cust_id,name,password) VALUES (?,?,?)";
 		Connection con = pool.getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql);) {
@@ -35,7 +41,7 @@ public class CustomerDao implements ICustomerDao {
 			stmt.setString(3, cust.getPassword());
 			stmt.executeUpdate();
 		} catch (SQLException e) {
-			throw new CustomerAlreadyExistsException("This customer already exists");
+			throw new ApplicationException(ErrorTypes.CUSTOMER_ALREADY_EXISTS);
 		} finally {
 			pool.returnConnection(con);
 		}
@@ -43,13 +49,13 @@ public class CustomerDao implements ICustomerDao {
 	}
 
 	@Override
-	public void removeCustomer(Long id) throws DaoException {
+	public void removeCustomer(Long id) throws ApplicationException {
 		String sql = String.format("DELETE FROM customer WHERE cust_id=%d", id);
 		Connection con = pool.getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql);) {
 			stmt.executeUpdate();
 		} catch (SQLException e) {
-			throw new CustomerDoesNotExistException("This customer does not exist");
+			throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
 		} finally {
 			pool.returnConnection(con);
 		}
@@ -57,7 +63,7 @@ public class CustomerDao implements ICustomerDao {
 	}
 
 	@Override
-	public void updateCustomer(Customer cust) throws DaoException {
+	public void updateCustomer(Customer cust) throws ApplicationException {
 		String sql = "UPDATE customer SET name=?, password=? WHERE cust_id=?";
 		Connection con = pool.getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql);) {
@@ -66,7 +72,7 @@ public class CustomerDao implements ICustomerDao {
 			stmt.setLong(3, cust.getId());
 			stmt.executeUpdate();
 		} catch (SQLException e) {
-			throw new CustomerDoesNotExistException("This customer does not exist");
+			throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
 		} finally {
 			pool.returnConnection(con);
 		}
@@ -74,26 +80,32 @@ public class CustomerDao implements ICustomerDao {
 	}
 
 	@Override
-	public Customer getCustomer(Long id) throws DaoException {
-		Customer customer = new Customer();
-		String sql = String.format("SELECT * FROM customer WHERE cust_id=%d", id);
-		Connection con = pool.getConnection();
-		try (PreparedStatement stmt = con.prepareStatement(sql); ResultSet resultSet = stmt.executeQuery();) {
-			while (resultSet.next()) {
+	public Customer getCustomer(Long id) throws ApplicationException {
+		Customer customer = null;
+		String sql = "SELECT * FROM customer WHERE cust_id=?";
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		try {
+			connection = pool.getConnection();
+			preparedStatement = connection.prepareStatement(sql);
+			preparedStatement.setLong(1, id);
+			resultSet = preparedStatement.executeQuery();
+			if (resultSet.next()) {
 				customer = Extractor.extractCustomerFromResultSet(resultSet);
-//				customer.setCoupons(getCoupons(customer));
+				return customer;
 			}
 		} catch (SQLException e) {
-			throw new CustomerDoesNotExistException("This customer does not exist");
+			throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
 		} finally {
-			pool.returnConnection(con);
+			UtilSQLcloser.SQLCloser(preparedStatement);
+			pool.returnConnection(connection);
 		}
-		return customer;
-
+		throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
 	}
 
 	@Override
-	public Collection<Customer> getAllCustomer() throws DaoException {
+	public Collection<Customer> getAllCustomer() throws ApplicationException {
 		Collection<Customer> collection = new ArrayList<Customer>();
 		String sql = "SELECT * FROM customer";
 		Connection con = pool.getConnection();
@@ -104,17 +116,19 @@ public class CustomerDao implements ICustomerDao {
 				customer = Extractor.extractCustomerFromResultSet(resultSet);
 				collection.add(customer);
 			}
+			if (!collection.isEmpty()) {
+				return collection;
+			}
 		} catch (SQLException e) {
-			throw new NoCustomersException("There are no customers at the Database");
+			throw new ApplicationException(ErrorTypes.NO_CUSTOMERS);
 		} finally {
 			pool.returnConnection(con);
 		}
-		return collection;
-
+		throw new ApplicationException(ErrorTypes.NO_CUSTOMERS);
 	}
 
 //	@Override
-//	public Collection<Customer> getAllCustomerWithCoupons() throws DaoException {
+//	public Collection<Customer> getAllCustomerWithCoupons() throws ApplicationException {
 //		Collection<Customer> collection = new ArrayList<Customer>();
 //		String sql = "SELECT * FROM customer";
 //		Connection con = pool.getConnection();
@@ -128,7 +142,7 @@ public class CustomerDao implements ICustomerDao {
 //				}
 //			}
 //		} catch (SQLException e) {
-//			throw new NoCustomersException("There are no customers");
+//			throw new ApplicationException("There are no customers");
 //		} finally {
 //			pool.returnConnection(con);
 //		}
@@ -137,7 +151,7 @@ public class CustomerDao implements ICustomerDao {
 //	}
 
 	@Override
-	public Boolean login(Long id, String password) throws DaoException {
+	public Boolean login(Long id, String password) throws ApplicationException {
 		String sql = "SELECT password FROM customer WHERE cust_id=?";
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
@@ -155,15 +169,15 @@ public class CustomerDao implements ICustomerDao {
 				return false;
 			}
 		} catch (SQLException e) {
-			throw new CustomerDoesNotExistException("No customer with this id found");
+			throw new ApplicationException(ErrorTypes.FAILED_TO_LOGIN);
 		} finally {
+			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
 	}
 
 	@Override
-	public Boolean customerExists(Long id) throws DaoException {
-		ArrayList<Long> list = new ArrayList<>();
+	public Boolean customerExists(Long id) throws ApplicationException {
 		String sql = "SELECT cust_id FROM customer WHERE cust_id=?";
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
@@ -173,20 +187,14 @@ public class CustomerDao implements ICustomerDao {
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setLong(1, id);
 			resultSet = preparedStatement.executeQuery();
-			while (resultSet.next()) {
-				list.add((resultSet.getLong("cust_id")));
-			}
-			for (Long long1 : list) {
-				if (id.equals(long1)) {
-					return true;
-				}
-			}
+
+			return resultSet.next();
+
 		} catch (SQLException e) {
-			throw new CustomerDoesNotExistException("This customer does not exist");
+			throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
-		return false;
 	}
 }

@@ -6,16 +6,15 @@ import com.hagi.couponsystem.Enums.CouponType;
 import com.hagi.couponsystem.beans.Coupon;
 import com.hagi.couponsystem.dao.CompanyDao;
 import com.hagi.couponsystem.dao.CouponDao;
-import com.hagi.couponsystem.exception.dao.DaoException;
-import com.hagi.couponsystem.exception.facade.FacadeException;
+import com.hagi.couponsystem.exceptions.ApplicationException;
 import com.hagi.couponsystem.logic.CouponLogic;
 
 public class aaaa {
 	public static void main(String[] args) {
 
 		Coupon coupon = new Coupon();
-		CompanyDao compDb = new CompanyDao();
-		CouponDao coupDb = new CouponDao();
+		CompanyDao compDb = CompanyDao.getInstance();
+		CouponDao coupDb = CouponDao.getInstance();
 		coupon.setId(1234);
 		coupon.setAmount(5);
 		coupon.setCompId(12343);
@@ -27,7 +26,7 @@ public class aaaa {
 		coupon.setTitle("test");
 		coupon.setType(CouponType.ELECTRICITY);
 
-		CouponLogic logic = new CouponLogic();
+		CouponLogic logic = CouponLogic.getInstance();
 		String enums = CouponType.typeToString(coupon.getType());
 		CouponType typeparse = CouponType.typeSort(enums);
 
@@ -36,7 +35,7 @@ public class aaaa {
 		try {
 			System.out.println(compDb.companyExists((long) 2311));
 			System.out.println(coupDb.getCouponByTypeForCompany(typeparse, 2311));
-		} catch (DaoException e1) {
+		} catch (ApplicationException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
@@ -50,7 +49,7 @@ public class aaaa {
 			System.out.println(logic.getAllCoupon());
 			System.out.println(logic.getAllCouponByType(coupon.getType()));
 			System.out.println(typeparse);
-		} catch (FacadeException e) {
+		} catch (ApplicationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

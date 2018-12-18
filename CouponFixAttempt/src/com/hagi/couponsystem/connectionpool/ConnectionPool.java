@@ -55,34 +55,37 @@ public class ConnectionPool {
 		}
 		Connection con = null;
 		con = conStack.pop();
-		notifyAll();
 		return con;
 	}
 
 	public synchronized void returnConnection(Connection Connection) {
-		while (conStack.size() == MAX) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
 		conStack.push(Connection);
 		notifyAll();
 	}
 
 	public synchronized void closeConnections() {
-		System.out.println("ConnectionPool shutting down");
-		for (Connection connection : conStack) {
+		int counter = 0;
+		while (counter != MAX) {
+			for (Connection connection : conStack) {
+				try {
+					connection.close();
+					counter++;
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			conStack.removeAll(conStack);
+			if (counter == MAX) {
+				return;
+			}
 			try {
-				connection.close();
-			} catch (SQLException e) {
-				System.err.println("unable to close connection");
+				wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		conStack.removeAll(conStack);
 	}
 
 }

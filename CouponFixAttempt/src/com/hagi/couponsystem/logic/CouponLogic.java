@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.util.Collection;
 
 import com.hagi.couponsystem.Enums.CouponType;
+import com.hagi.couponsystem.Enums.ErrorTypes;
 import com.hagi.couponsystem.Idao.ICompanyDao;
 import com.hagi.couponsystem.Idao.ICouponDao;
 import com.hagi.couponsystem.Idao.ICustomerDao;
@@ -11,232 +12,177 @@ import com.hagi.couponsystem.beans.Coupon;
 import com.hagi.couponsystem.dao.CompanyDao;
 import com.hagi.couponsystem.dao.CouponDao;
 import com.hagi.couponsystem.dao.CustomerDao;
-import com.hagi.couponsystem.exception.dao.DaoException;
-import com.hagi.couponsystem.exception.facade.FacadeException;
-import com.hagi.couponsystem.exception.facade.NoCouponsException;
-import com.hagi.couponsystem.exception.facade.OutOfCouponsException;
+import com.hagi.couponsystem.exceptions.ApplicationException;
 
 public class CouponLogic {
-	private ICouponDao coupDb = new CouponDao();
-	private ICustomerDao custDb = new CustomerDao();
-	private ICompanyDao compDb = new CompanyDao();
+	private ICouponDao coupDb = CouponDao.getInstance();
+	private ICustomerDao custDb = CustomerDao.getInstance();
+	private ICompanyDao compDb = CompanyDao.getInstance();
+	private static CouponLogic instance;
 
-	public CouponLogic() {
-
+	private CouponLogic() {
+		super();
 	}
 
-	public void createCoupon(Coupon coup) throws FacadeException {
-		try {
-			if (!compDb.companyExists(coup.getCompId())) {
-				Collection<Coupon> List;
-				List = coupDb.getAllCouponsForCompany(coup.getCompId());
-				if (List.isEmpty()) {
-					coupDb.createCoupon(coup);
-					return;
-				}
-				for (Coupon coupon : List) {
-					if (coupon.getTitle().equals(coup.getTitle())) {
-						throw new FacadeException("A coupon with this title already exists");
-					}
-					coupDb.createCoupon(coup);
-					return;
-				}
-			} else {
-				throw new FacadeException("No company");
-			}
-		} catch (DaoException e) {
-			throw new FacadeException("failed to create coupon");
+	public static CouponLogic getInstance() {
+		if (instance == null) {
+			instance = new CouponLogic();
 		}
+		return instance;
 	}
 
-	public void removeCoupon(Long coupId) throws FacadeException {
-		try {
+	public void createCoupon(Coupon coup) throws ApplicationException {
+		if (compDb.companyExists(coup.getCompId())) {
+			Collection<Coupon> List;
+			List = coupDb.getAllCouponsForCompany(coup.getCompId());
+			if (List.isEmpty()) {
+				coupDb.createCoupon(coup);
+				return;
+			}
+
+			for (Coupon coupon : List) {
+				if (coupon.getTitle().equals(coup.getTitle())) {
+					throw new ApplicationException(ErrorTypes.SAME_TITLE);
+				}
+			}
+			coupDb.createCoupon(coup);
+			return;
+		}
+
+		throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
+	}
+
+	public void removeCoupon(Long coupId) throws ApplicationException {
+		if (coupDb.couponExists(coupId)) {
 			coupDb.fullyRemoveCoupon(coupId);
-		} catch (DaoException e) {
-			throw new FacadeException("Coupon not found");
 		}
+		throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
 	}
 
-	public void updateCoupon(Coupon coup) throws FacadeException {
-		try {
-			coupDb.updateCoupon(coup);
-		} catch (DaoException e) {
-			throw new NoCouponsException("There is no such coupon in the Database");
-		}
+	public void updateCoupon(Coupon coup) throws ApplicationException {
+		if (coupDb.couponExists(coup.getId())) {
+			Collection<Coupon> List;
+			List = coupDb.getAllCouponsForCompany(coup.getCompId());
 
-	}
-
-	public Coupon getCoupon(Long coupId) throws FacadeException {
-		try {
-			return coupDb.getCoupon(coupId);
-		} catch (DaoException e) {
-			throw new NoCouponsException("There is no such coupon in the Database");
-		}
-	}
-
-	public Collection<Coupon> getAllCouponForCompany(Long compId) throws FacadeException {
-		try {
-			if (compDb.companyExists(compId)) {
-				return coupDb.getAllCouponsForCompany(compId);
-			}
-		} catch (DaoException e) {
-			throw new FacadeException("We have encountered a probelm, try logging in again");
-		}
-		return null;
-	}
-
-	public Collection<Coupon> getAllCouponByTypeForcompany(CouponType type, Long compId) throws FacadeException {
-		if (CouponType.typeValidator(type)) {
-			try {
-				if (compDb.companyExists(compId)) {
-					return coupDb.getCouponByTypeForCompany(type, compId);
-				} else {
-					throw new FacadeException("Invalid company id, try logging in again");
+			for (Coupon coupon : List) {
+				if (coupon.getTitle().equals(coup.getTitle()) && coupon.getId() != coup.getId()) {
+					throw new ApplicationException(ErrorTypes.SAME_TITLE);
 				}
-
-			} catch (DaoException e) {
-				throw new FacadeException("We have encountered a probelm, try logging in again");
 			}
-		}
-		return null;
-	}
-
-	public Collection<Coupon> getAllCouponByPriceForCompany(double price, Long compId) throws FacadeException {
-		try {
-			if (compDb.companyExists(compId)) {
-				return coupDb.getCouponByPriceForCompany(price, compId);
-			}
-		} catch (DaoException e) {
-			throw new FacadeException("We have encountered an error, try logging in");
-		}
-		return null;
-	}
-
-	public Collection<Coupon> getAllCouponByDateForCompany(Date date, Long compId) throws FacadeException {
-		try {
-			if (compDb.companyExists(compId)) {
-				return coupDb.getCouponByDateForCompany(date, compId);
-			}
-		} catch (DaoException e) {
-			throw new FacadeException("We have encountered an error, try logging in");
-		}
-		return null;
-	}
-
-	public Collection<Coupon> getAllCoupon() throws FacadeException {
-		try {
-			return coupDb.getAllCoupons();
-
-		} catch (DaoException e) {
-			throw new FacadeException("We have encountered a probelm, try logging in again");
+			coupDb.updateCoupon(coup);
+			return;
 		}
 	}
 
-	public Collection<Coupon> getAllCouponByType(CouponType type) throws FacadeException {
+	public Coupon getCoupon(Long coupId) throws ApplicationException {
+		return coupDb.getCoupon(coupId);
+	}
+
+	public Collection<Coupon> getAllCouponForCompany(Long compId) throws ApplicationException {
+		if (compDb.companyExists(compId)) {
+			return coupDb.getAllCouponsForCompany(compId);
+		}
+		throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
+	}
+
+	public Collection<Coupon> getAllCouponByTypeForcompany(CouponType type, Long compId) throws ApplicationException {
 		if (CouponType.typeValidator(type)) {
-			try {
-				return coupDb.getCouponByType(type);
-			} catch (DaoException e) {
-				e.printStackTrace();
-				throw new FacadeException("We have encountered a probelm, try logging in again");
+			if (compDb.companyExists(compId)) {
+				return coupDb.getCouponByTypeForCompany(type, compId);
 			}
+			throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 		}
-		throw new FacadeException("You have entered an invalid type");
+		throw new ApplicationException(ErrorTypes.INVALID_TYPE);
 	}
 
-	public Collection<Coupon> getAllCouponByPrice(double price) throws FacadeException {
-		try {
-			return coupDb.getCouponByPrice(price);
-		} catch (DaoException e) {
-			throw new FacadeException("We have encountered an error, try logging in");
+	public Collection<Coupon> getAllCouponByPriceForCompany(double price, Long compId) throws ApplicationException {
+		if (compDb.companyExists(compId)) {
+			return coupDb.getCouponByPriceForCompany(price, compId);
 		}
+		throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 	}
 
-	public Collection<Coupon> getAllCouponByDate(Date date) throws FacadeException {
-		try {
-			return coupDb.getCouponByDate(date);
-		} catch (DaoException e) {
-			throw new FacadeException("something went wrong");
+	public Collection<Coupon> getAllCouponByDateForCompany(Date date, Long compId) throws ApplicationException {
+		if (compDb.companyExists(compId)) {
+			return coupDb.getCouponByDateForCompany(date, compId);
 		}
+		throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 	}
 
-	public void purchaseCoupon(Long couponId, Long customerId) throws FacadeException {
+	public Collection<Coupon> getAllCoupon() throws ApplicationException {
+		return coupDb.getAllCoupons();
+	}
+
+	public Collection<Coupon> getAllCouponByType(CouponType type) throws ApplicationException {
+		if (CouponType.typeValidator(type)) {
+			return coupDb.getCouponByType(type);
+		}
+		throw new ApplicationException(ErrorTypes.INVALID_TYPE);
+	}
+
+	public Collection<Coupon> getAllCouponByPrice(double price) throws ApplicationException {
+		return coupDb.getCouponByPrice(price);
+	}
+
+	public Collection<Coupon> getAllCouponByDate(Date date) throws ApplicationException {
+		return coupDb.getCouponByDate(date);
+	}
+
+	public void purchaseCoupon(Long couponId, Long customerId) throws ApplicationException {
 		Coupon coup = null;
-		try {
-			coup = coupDb.getCoupon(couponId);
+		coup = coupDb.getCoupon(couponId);
 
 		if (coup.getAmount() <= 0) {
-			throw new OutOfCouponsException("There are no coupons left to buy");
+			throw new ApplicationException(ErrorTypes.OUT_OF_COUPONS);
 		}
-		} catch (DaoException e1) {
-			throw new NoCouponsException("No coupon with this Id was found");
-		}
-		try {
 
-			if (custDb.customerExists(customerId)) {
+		if (custDb.customerExists(customerId)) {
 
-				Collection<Coupon> coupons = coupDb.getCouponsForCustomer(customerId);
-				for (Coupon coupon : coupons) {
-					if (coupon.getId() == coup.getId()) {
-						throw new FacadeException("You already own this coupon");
-					}
+			Collection<Coupon> coupons = coupDb.getCouponsForCustomer(customerId);
+			for (Coupon coupon : coupons) {
+				if (coupon.getId() == coup.getId()) {
+					throw new ApplicationException(ErrorTypes.CUSTOMER_OWNS_COUPON);
 				}
-				coupDb.customerPurchaseCoupon(couponId, customerId);
-				coup.setAmount(coup.getAmount() - 1);
-				coupDb.updateCoupon(coup);
 			}
-
-		} catch (DaoException e) {
-			throw new FacadeException("You already own this coupon/Other exception");
-
+			coupDb.customerPurchaseCoupon(couponId, customerId);
+			coup.setAmount(coup.getAmount() - 1);
+			coupDb.updateCoupon(coup);
+			return;
 		}
+		throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
+
 	}
 
-	public Collection<Coupon> getAllCouponByTypeForCustomer(CouponType type, Long customerId) throws FacadeException {
+	public Collection<Coupon> getAllCouponByTypeForCustomer(CouponType type, Long customerId)
+			throws ApplicationException {
 		if (CouponType.typeValidator(type)) {
-			try {
-				if (custDb.customerExists(customerId)) {
-					return coupDb.getCouponByTypeForCustomer(type, customerId);
-				} else {
-					throw new FacadeException("Invalid customer Id");
-				}
-			} catch (DaoException e) {
-				throw new FacadeException("We have encountered a probelm, try logging in again");
-			}
-		}
-		return null;
-	}
-
-	public Collection<Coupon> getAllCouponByPriceForCustomer(double price, Long customerId) throws FacadeException {
-		try {
 			if (custDb.customerExists(customerId)) {
-				return coupDb.getCouponByPriceForCustomer(price, customerId);
+				return coupDb.getCouponByTypeForCustomer(type, customerId);
 			}
-		} catch (DaoException e) {
-			throw new FacadeException("Customer id is invalid");
+			throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
 		}
-		return null;
+		throw new ApplicationException(ErrorTypes.INVALID_TYPE);
 	}
 
-	public Collection<Coupon> getAllCouponByDateForCustomer(Date date, Long custId) throws FacadeException {
-		try {
-			if (custDb.customerExists(custId)) {
-				return coupDb.getCouponByDateForCustomer(date, custId);
-			}
-		} catch (DaoException e) {
-			throw new FacadeException("We have encountered an error, try logging in");
+	public Collection<Coupon> getAllCouponByPriceForCustomer(double price, Long customerId)
+			throws ApplicationException {
+		if (custDb.customerExists(customerId)) {
+			return coupDb.getCouponByPriceForCustomer(price, customerId);
 		}
-		return null;
+		throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
 	}
 
-	public Collection<Coupon> getAllCouponForCustomer(Long custId) throws FacadeException {
-		try {
-			if (custDb.customerExists(custId)) {
-				return coupDb.getCouponsForCustomer(custId);
-			}
-		} catch (DaoException e) {
-			throw new FacadeException("We have encountered a probelm, try logging in again");
+	public Collection<Coupon> getAllCouponByDateForCustomer(Date date, Long custId) throws ApplicationException {
+		if (custDb.customerExists(custId)) {
+			return coupDb.getCouponByDateForCustomer(date, custId);
 		}
-		return null;
+		throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
+	}
+
+	public Collection<Coupon> getAllCouponForCustomer(Long custId) throws ApplicationException {
+		if (custDb.customerExists(custId)) {
+			return coupDb.getCouponsForCustomer(custId);
+		}
+		throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
 	}
 }

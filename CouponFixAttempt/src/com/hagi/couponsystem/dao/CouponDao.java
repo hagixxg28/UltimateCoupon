@@ -10,25 +10,31 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import com.hagi.couponsystem.Enums.CouponType;
+import com.hagi.couponsystem.Enums.ErrorTypes;
 import com.hagi.couponsystem.Idao.ICouponDao;
 import com.hagi.couponsystem.Utils.Extractor;
 import com.hagi.couponsystem.Utils.UtilSQLcloser;
 import com.hagi.couponsystem.beans.Coupon;
 import com.hagi.couponsystem.connectionpool.ConnectionPool;
-import com.hagi.couponsystem.exception.dao.CouponAlreadyExistsException;
-import com.hagi.couponsystem.exception.dao.CouponDoesNotExistException;
-import com.hagi.couponsystem.exception.dao.CustomerDoesNotExistException;
-import com.hagi.couponsystem.exception.dao.DaoException;
+import com.hagi.couponsystem.exceptions.ApplicationException;
 
 public class CouponDao implements ICouponDao {
 	private ConnectionPool pool = ConnectionPool.getPool();
+	private static CouponDao instance;
 
-	public CouponDao() {
+	private CouponDao() {
 		super();
 	}
 
+	public static CouponDao getInstance() {
+		if (instance == null) {
+			instance = new CouponDao();
+		}
+		return instance;
+	}
+
 	@Override
-	public void createCoupon(Coupon coup) throws DaoException {
+	public void createCoupon(Coupon coup) throws ApplicationException {
 		String sql = "INSERT INTO coupon VALUES (?, ?, ?, ? ,?, ?, ?, ?, ?, ?)";
 		Connection con = pool.getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql);) {
@@ -45,7 +51,7 @@ public class CouponDao implements ICouponDao {
 			stmt.executeUpdate();
 			System.out.println(coup + " has been added");
 		} catch (SQLException e) {
-			throw new CouponAlreadyExistsException("This coupon already exists");
+			throw new ApplicationException(ErrorTypes.COUPON_ALREADY_EXISTS);
 		} finally {
 			pool.returnConnection(con);
 		}
@@ -53,24 +59,31 @@ public class CouponDao implements ICouponDao {
 	}
 
 	@Override
-	public void fullyRemoveCoupon(Long id) throws DaoException {
-		String sql = String.format("DELETE FROM coupon WHERE coup_id=%d", id);
-		String sql3 = String.format("DELETE FROM customer_coupon WHERE coup_id=%d", id);
-		Connection con = pool.getConnection();
-		try (PreparedStatement stmt = con.prepareStatement(sql);
-				PreparedStatement stmt3 = con.prepareStatement(sql3);) {
-			stmt.executeUpdate();
-			stmt3.executeUpdate();
-			System.out.println("Coupon with id " + id + " has been removed");
+	public void fullyRemoveCoupon(Long id) throws ApplicationException {
+		String sql = "DELETE FROM coupon WHERE coup_id=?";
+		String sql2 = "DELETE FROM customer_coupon WHERE coup_id=?";
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		PreparedStatement preparedStatement2 = null;
+		try {
+			connection = pool.getConnection();
+			preparedStatement = connection.prepareStatement(sql);
+			preparedStatement.setLong(1, id);
+			preparedStatement.executeUpdate();
+			preparedStatement2 = connection.prepareStatement(sql2);
+			preparedStatement.setLong(1, id);
+			preparedStatement.executeUpdate();
 		} catch (SQLException e) {
-			throw new CouponDoesNotExistException("This coupon does not exist");
+			throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
 		} finally {
-			pool.returnConnection(con);
+			UtilSQLcloser.SQLCloser(preparedStatement);
+			UtilSQLcloser.SQLCloser(preparedStatement2);
+			pool.returnConnection(connection);
 		}
 	}
 
 	@Override
-	public void updateCoupon(Coupon coup) throws DaoException {
+	public void updateCoupon(Coupon coup) throws ApplicationException {
 		String sql = "UPDATE coupon SET title=?, start_date=?, end_date=?, amount=?, type=?, message=?, price=?, image=?, comp_id=? WHERE coup_id=?";
 		Connection con = pool.getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql);) {
@@ -86,15 +99,15 @@ public class CouponDao implements ICouponDao {
 			stmt.setLong(10, coup.getId());
 			stmt.executeUpdate();
 		} catch (SQLException e) {
-			throw new CouponDoesNotExistException("This coupon does not exist");
+			throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
 		} finally {
 			pool.returnConnection(con);
 		}
 	}
 
 	@Override
-	public Coupon getCoupon(Long id) throws DaoException {
-		Coupon coupon = new Coupon();
+	public Coupon getCoupon(Long id) throws ApplicationException {
+		Coupon coupon = null;
 		String sql = "SELECT * FROM coupon WHERE coup_id=?";
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
@@ -110,13 +123,13 @@ public class CouponDao implements ICouponDao {
 			}
 
 		} catch (SQLException e) {
-			throw new DaoException("GEt coupon is bad");
+			throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
 		}
-		return null;
+		throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
 	}
 
 	@Override
-	public Collection<Coupon> getAllCoupons() throws DaoException {
+	public Collection<Coupon> getAllCoupons() throws ApplicationException {
 		Collection<Coupon> collection = new ArrayList<Coupon>();
 		String sql = "SELECT * FROM coupon";
 		Connection con = pool.getConnection();
@@ -126,20 +139,20 @@ public class CouponDao implements ICouponDao {
 				coupon = Extractor.extractCouponFromResultSet(resultSet);
 				collection.add(coupon);
 			}
+			if (!collection.isEmpty()) {
+				return collection;
+			}
+
 		} catch (SQLException e) {
-			throw new CouponDoesNotExistException("There are no coupons at the database");
+			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 		} finally {
 			pool.returnConnection(con);
 		}
-		if (!collection.isEmpty()) {
-			return collection;
-		} else {
-			throw new CouponDoesNotExistException("There are no coupons at the database");
-		}
+		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 
 	@Override
-	public Collection<Coupon> getCouponByType(CouponType type) throws DaoException {
+	public Collection<Coupon> getCouponByType(CouponType type) throws ApplicationException {
 		Collection<Coupon> collection = new ArrayList<Coupon>();
 		String sql = "SELECT * FROM coupon WHERE type=?";
 		Connection connection = null;
@@ -155,37 +168,62 @@ public class CouponDao implements ICouponDao {
 				coupon = Extractor.extractCouponFromResultSet(resultSet);
 				collection.add(coupon);
 			}
+			if (!collection.isEmpty()) {
+				return collection;
+			}
+
 		} catch (SQLException e) {
-			throw new CouponDoesNotExistException("There are no coupons with that type at the database");
+			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
-		return collection;
+		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 
 	@Override
-	public void customerPurchaseCoupon(Long coupId, Long custId) throws DaoException {
-		String sql2 = "INSERT INTO customer_coupon VALUES(?, ?)";
-		Connection con = pool.getConnection();
-		try (PreparedStatement stmt2 = con.prepareStatement(sql2);) {
-			stmt2.setLong(1, custId);
-			stmt2.setLong(2, coupId);
-			stmt2.executeUpdate();
+	public void customerPurchaseCoupon(Long coupId, Long custId) throws ApplicationException {
+		String sql = "INSERT INTO customer_coupon VALUES(?, ?)";
+		Connection connection = pool.getConnection();
+		try (PreparedStatement preparedStatement = connection.prepareStatement(sql);) {
+			preparedStatement.setLong(1, custId);
+			preparedStatement.setLong(2, coupId);
+			preparedStatement.executeUpdate();
 		} catch (SQLException e) {
-			throw new CouponAlreadyExistsException("This coupon already exists for this customer");
+			throw new ApplicationException(ErrorTypes.CUSTOMER_OWNS_COUPON);
+		} finally {
+			pool.returnConnection(connection);
 		}
 	}
 
 	@Override
-	public void removeCouponCust(Long id) throws DaoException {
-		String sql2 = String.format("DELETE FROM customer_coupon WHERE coup_id=%d", id);
-		Connection con = pool.getConnection();
-		try (PreparedStatement stmt2 = con.prepareStatement(sql2);) {
-			stmt2.executeUpdate();
-			System.out.println("Coupon with id " + id + " has been removed");
+	public void removeCouponCust(Long id) throws ApplicationException {
+		String sql = "DELETE FROM customer_coupon WHERE coup_id=?";
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		try {
+			connection = pool.getConnection();
+			preparedStatement = connection.prepareStatement(sql);
+			preparedStatement.setLong(1, id);
+			preparedStatement.executeUpdate();
 		} catch (SQLException e) {
-			throw new CustomerDoesNotExistException("This customer does not exist");
+			throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
+		} finally {
+			pool.returnConnection(connection);
+			UtilSQLcloser.SQLCloser(preparedStatement);
+		}
+
+	}
+
+	@Override
+	public void removeCouponCoup(Long id) throws ApplicationException {
+		String sql = "DELETE FROM coupon WHERE coup_id=?";
+		Connection con = pool.getConnection();
+		try (PreparedStatement preparedStatement = con.prepareStatement(sql);) {
+			preparedStatement.setLong(1, id);
+			preparedStatement.executeUpdate();
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
 		} finally {
 			pool.returnConnection(con);
 		}
@@ -193,21 +231,7 @@ public class CouponDao implements ICouponDao {
 	}
 
 	@Override
-	public void removeCouponCoup(Long id) throws DaoException {
-		String sql = String.format("DELETE FROM coupon WHERE coup_id=%d", id);
-		Connection con = pool.getConnection();
-		try (PreparedStatement stmt = con.prepareStatement(sql);) {
-			stmt.executeUpdate();
-		} catch (SQLException e) {
-			throw new CouponDoesNotExistException("This cuopon does not exist");
-		} finally {
-			pool.returnConnection(con);
-		}
-
-	}
-
-	@Override
-	public Collection<Long> getAllExpiredCoupons() throws DaoException {
+	public Collection<Long> getAllExpiredCoupons() throws ApplicationException {
 		ArrayList<Long> list = new ArrayList<>();
 		Date date1 = new Date(System.currentTimeMillis());
 		String sql = "SELECT coup_id FROM coupon WHERE end_date < '" + date1 + "'";
@@ -217,7 +241,7 @@ public class CouponDao implements ICouponDao {
 				list.add(rs.getLong("coup_id"));
 			}
 		} catch (SQLException e) {
-			throw new DaoException("An error has occoured");
+			throw new ApplicationException(ErrorTypes.SYSTEM_FAILFURE);
 		} finally {
 			pool.returnConnection(con);
 		}
@@ -225,7 +249,7 @@ public class CouponDao implements ICouponDao {
 	}
 
 	@Override
-	public Collection<Coupon> getAllCouponsForCompany(Long compId) throws DaoException {
+	public Collection<Coupon> getAllCouponsForCompany(Long compId) throws ApplicationException {
 		Collection<Coupon> collection = new ArrayList<Coupon>();
 		String sql = "SELECT * FROM coupon WHERE comp_id=?";
 //		String sql = "SELECT company_coupon.coup_id FROM company_coupon INNER JOIN coupon"
@@ -244,18 +268,21 @@ public class CouponDao implements ICouponDao {
 				coupon = Extractor.extractCouponFromResultSet(resultSet);
 				collection.add(coupon);
 			}
+			if (!collection.isEmpty()) {
+				return collection;
+			}
 
 		} catch (SQLException e) {
-			throw new DaoException("No coupons were found for this Id");
+			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
-		return collection;
+		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 
 	@Override
-	public Collection<Coupon> getCouponsForCustomer(Long id) throws DaoException {
+	public Collection<Coupon> getCouponsForCustomer(Long id) throws ApplicationException {
 		Collection<Coupon> collection = new ArrayList<Coupon>();
 		String sql = "SELECT customer_coupon.coup_id FROM customer_coupon INNER JOIN coupon"
 				+ " ON coupon.coup_id=customer_coupon.coup_id" + " WHERE cust_id=?";
@@ -287,13 +314,13 @@ public class CouponDao implements ICouponDao {
 				}
 			}
 		} catch (SQLException e) {
-			throw new CustomerDoesNotExistException("Couldn't find a customer with this coupon id");
+			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 		}
 		return collection;
 	}
 
 	@Override
-	public Collection<Coupon> getCouponByPrice(double price) throws DaoException {
+	public Collection<Coupon> getCouponByPrice(double price) throws ApplicationException {
 		Collection<Coupon> collection = new ArrayList<Coupon>();
 		String sql = "SELECT * FROM coupon WHERE price<=?";
 		Connection connection = null;
@@ -311,7 +338,7 @@ public class CouponDao implements ICouponDao {
 			}
 
 		} catch (SQLException e) {
-			throw new DaoException("No coupons were found for this Id");
+			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
@@ -320,7 +347,7 @@ public class CouponDao implements ICouponDao {
 	}
 
 	@Override
-	public Collection<Coupon> getCouponByPriceForCompany(double price, long companyId) throws DaoException {
+	public Collection<Coupon> getCouponByPriceForCompany(double price, long companyId) throws ApplicationException {
 		Collection<Coupon> collection = new ArrayList<Coupon>();
 		String sql = "SELECT * FROM coupon WHERE price<=? AND comp_id=?";
 		Connection connection = null;
@@ -339,7 +366,7 @@ public class CouponDao implements ICouponDao {
 			}
 
 		} catch (SQLException e) {
-			throw new DaoException("No coupons were found for this Id");
+			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
@@ -348,7 +375,7 @@ public class CouponDao implements ICouponDao {
 	}
 
 	@Override
-	public Collection<Coupon> getCouponByPriceForCustomer(double price, long customerId) throws DaoException {
+	public Collection<Coupon> getCouponByPriceForCustomer(double price, long customerId) throws ApplicationException {
 		Collection<Coupon> collection = new ArrayList<Coupon>();
 		String sql = "SELECT customer_coupon.coup_id FROM customer_coupon INNER JOIN coupon"
 				+ " ON coupon.coup_id=customer_coupon.coup_id" + " WHERE cust_id=?";
@@ -381,13 +408,13 @@ public class CouponDao implements ICouponDao {
 				}
 			}
 		} catch (SQLException e) {
-			throw new CustomerDoesNotExistException("Couldn't find a customer with this coupon id");
+			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 		}
 		return collection;
 	}
 
 	@Override
-	public Collection<Coupon> getCouponByDateForCustomer(Date date, long custId) throws DaoException {
+	public Collection<Coupon> getCouponByDateForCustomer(Date date, long custId) throws ApplicationException {
 		String sql = "SELECT coup_id FROM customer_coupon WHERE cust_id=?";
 		Collection<Coupon> list = new ArrayList<Coupon>();
 		Collection<Long> collection = new ArrayList<Long>();
@@ -416,7 +443,7 @@ public class CouponDao implements ICouponDao {
 				}
 			}
 		} catch (SQLException e) {
-			throw new DaoException("Something");
+			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
@@ -426,7 +453,7 @@ public class CouponDao implements ICouponDao {
 	}
 
 	@Override
-	public Collection<Coupon> getCouponByDateForCompany(Date date, long compId) throws DaoException {
+	public Collection<Coupon> getCouponByDateForCompany(Date date, long compId) throws ApplicationException {
 		String sql = "SELECT * FROM coupon WHERE end_date >=? AND comp_id=?";
 		Collection<Coupon> list = new ArrayList<Coupon>();
 		Connection connection = null;
@@ -445,17 +472,20 @@ public class CouponDao implements ICouponDao {
 				coupon = Extractor.extractCouponFromResultSet(resultSet);
 				list.add(coupon);
 			}
+			if (!list.isEmpty()) {
+				return list;
+			}
 		} catch (SQLException e) {
-			throw new DaoException("Something");
+			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
-		return list;
+		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 
 	@Override
-	public Collection<Coupon> getCouponByDate(Date date) throws DaoException {
+	public Collection<Coupon> getCouponByDate(Date date) throws ApplicationException {
 		String sql = "SELECT * FROM coupon WHERE end_date >=?";
 		Collection<Coupon> list = new ArrayList<Coupon>();
 		Connection connection = null;
@@ -473,17 +503,20 @@ public class CouponDao implements ICouponDao {
 				coupon = Extractor.extractCouponFromResultSet(resultSet);
 				list.add(coupon);
 			}
+			if (!list.isEmpty()) {
+				return list;
+			}
 		} catch (SQLException e) {
-			throw new DaoException("Something");
+			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
-		return list;
+		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 
 	@Override
-	public Collection<Coupon> getCouponByTypeForCustomer(CouponType type, long customerId) throws DaoException {
+	public Collection<Coupon> getCouponByTypeForCustomer(CouponType type, long customerId) throws ApplicationException {
 		String sql = "SELECT coup_id FROM customer_coupon WHERE cust_id=?";
 		Collection<Coupon> list = new ArrayList<Coupon>();
 		Collection<Long> collection = new ArrayList<Long>();
@@ -510,19 +543,22 @@ public class CouponDao implements ICouponDao {
 					coupon = Extractor.extractCouponFromResultSet(resultSet);
 					list.add(coupon);
 				}
+				if (!list.isEmpty()) {
+					return list;
+				}
 			}
 		} catch (SQLException e) {
-			throw new DaoException("Something");
+			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
-		return list;
+		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 
 	@Override
-	public Collection<Coupon> getCouponByTypeForCompany(CouponType type, long companyId) throws DaoException {
+	public Collection<Coupon> getCouponByTypeForCompany(CouponType type, long companyId) throws ApplicationException {
 		Collection<Coupon> collection = new ArrayList<Coupon>();
 		String sql = "SELECT * FROM coupon WHERE type=? AND comp_id=? ";
 		Connection connection = null;
@@ -539,8 +575,11 @@ public class CouponDao implements ICouponDao {
 				coupon = Extractor.extractCouponFromResultSet(resultSet);
 				collection.add(coupon);
 			}
+			if (!collection.isEmpty()) {
+				return collection;
+			}
 		} catch (SQLException e) {
-			throw new CouponDoesNotExistException("There are no coupons with that type at the database");
+			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
@@ -548,13 +587,33 @@ public class CouponDao implements ICouponDao {
 		if (!collection.isEmpty()) {
 			return collection;
 		}
-		return null;
+		throw new ApplicationException(ErrorTypes.NO_COUPONS);
+	}
+
+	@Override
+	public boolean couponExists(Long id) throws ApplicationException {
+		String sql = "SELECT coup_id FROM coupon WHERE coup_id=?";
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		try {
+			connection = pool.getConnection();
+			preparedStatement = connection.prepareStatement(sql);
+			preparedStatement.setLong(1, id);
+			resultSet = preparedStatement.executeQuery();
+			return resultSet.next();
+		} catch (SQLException e) {
+			throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
+		} finally {
+			UtilSQLcloser.SQLCloser(preparedStatement);
+			pool.returnConnection(connection);
+		}
 	}
 }
 
 // NOT USED AT THE MOMENT
 // public boolean customerOwnsCoupon(Coupon coup, Customer cust) throws
-// DaoException {
+// ApplicationException {
 // String sql2 = "SELECT * customer_coupon WHERE cust_id=" + cust.getId() +
 // " AND coup_id=" + coup.getId();
 // Connection con = pool.getConnection();
@@ -573,6 +632,6 @@ public class CouponDao implements ICouponDao {
 // return true;
 // }
 // } catch (SQLException e) {
-// throw new CouponAlreadyExistsException("No coupons were found");
+// throw new ApplicationException("No coupons were found");
 // }
 // }

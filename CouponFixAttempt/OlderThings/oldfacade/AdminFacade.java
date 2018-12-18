@@ -16,8 +16,8 @@ import com.hagi.couponsystem.exception.facade.FacadeException;
 
 public class AdminFacade implements CouponClientFacade {
 
-	private ICustomerDao custDb = new CustomerDao();
-	private ICompanyDao compDb = new CompanyDao();
+	private ICustomerDao custDb = CustomerDao.getInstance();
+	private ICompanyDao compDb = CompanyDao.getInstance();
 //	private ICouponDao coupDb = new CouponDao();
 
 	public AdminFacade() {

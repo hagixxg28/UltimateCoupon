@@ -13,54 +13,42 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import com.hagi.couponsystem.beans.Company;
-import com.hagi.couponsystem.exception.facade.FacadeException;
+import com.hagi.couponsystem.exceptions.ApplicationException;
 import com.hagi.couponsystem.logic.CompanyLogic;
 
 @Path("Company")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class CompanyApi {
+	private CompanyLogic logic = CompanyLogic.getInstance();
 
 //	http://localhost:8080/CouponFixAttempt/rest/Company
 
 //
 	@GET
 	@Path("/{companyId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Company getCompany(@PathParam("companyId") long companyId) throws FacadeException {
-		CompanyLogic logic = new CompanyLogic();
+	public Company getCompany(@PathParam("companyId") long companyId) throws ApplicationException {
 		return logic.getcompany(companyId);
 	}
 
 	@POST
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public void createCompany(Company company) throws FacadeException {
-		CompanyLogic logic = new CompanyLogic();
+	public void createCompany(Company company) throws ApplicationException {
 		logic.createCompany(company);
 	}
 
 	@PUT
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public void updateCompany(Company company) throws FacadeException {
-		CompanyLogic logic = new CompanyLogic();
+	public void updateCompany(Company company) throws ApplicationException {
 		logic.updateCompany(company);
 	}
 
 	@DELETE
 	@Path("/{companyId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public void removeCompany(@PathParam("companyId") long companyId) throws FacadeException {
-		CompanyLogic logic = new CompanyLogic();
+	public void removeCompany(@PathParam("companyId") long companyId) throws ApplicationException {
 		logic.removeCompany(companyId);
 	}
 
 	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Collection<Company> getAllCompanies() throws FacadeException {
-		CompanyLogic logic = new CompanyLogic();
+	public Collection<Company> getAllCompanies() throws ApplicationException {
 		return logic.getAllCompanies();
 	}
 }

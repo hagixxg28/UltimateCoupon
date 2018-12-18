@@ -4,13 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import com.hagi.couponsystem.Idao.ICouponDao;
-import com.hagi.couponsystem.beans.Coupon;
 import com.hagi.couponsystem.dao.CouponDao;
-import com.hagi.couponsystem.exception.dao.DaoException;
+import com.hagi.couponsystem.exceptions.ApplicationException;
 
 public class DailyCouponExpirationTask implements Runnable {
 
-	private ICouponDao coupDb = new CouponDao();
+	private ICouponDao coupDb = CouponDao.getInstance();
 	private boolean quit = false;
 
 	public DailyCouponExpirationTask() {
@@ -18,39 +17,25 @@ public class DailyCouponExpirationTask implements Runnable {
 
 	@Override
 	public void run() {
-		// USE only DAO commands and remove the SQL shell from here
 		while (!quit) {
 			Collection<Long> list = new ArrayList<>();
 			try {
-				try {
-					list = coupDb.getAllExpiredCoupons();
-				} catch (DaoException e1) {
-					System.err.println("Failed to run get existing expired coupon at thread");
-					e1.printStackTrace();
-				}
+
+				list = coupDb.getAllExpiredCoupons();
 				if (!list.isEmpty()) {
-					System.out.println("Found " + list.size() + " coupons to delete, deleting.");
 					for (Long long1 : list) {
-						Coupon coup = new Coupon();
-						coup.setId(long1);
-						try {
-							coupDb.fullyRemoveCoupon(coup.getId());
-						} catch (DaoException e) {
-							System.err.println("Failed to delete existing coupon at thread");
-							e.printStackTrace();
-						}
+						coupDb.fullyRemoveCoupon(long1);
 					}
-					System.out.println("Finished deleting, going to sleep");
-					Thread.sleep(86400000);
-				} else {
-					System.out.println("No coupons to delete, going to sleep");
-					Thread.sleep(86400000);
 				}
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-				System.out.println("Thread has been interrupted, shutting down");
-			} finally {
-				System.out.println(Thread.currentThread().getName() + " is closing");
+				try {
+					Thread.sleep(86400000);
+
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+
+			} catch (ApplicationException e) {
+				e.printStackTrace();
 			}
 		}
 	}

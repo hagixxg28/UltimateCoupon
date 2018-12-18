@@ -8,23 +8,31 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.hagi.couponsystem.Enums.ErrorTypes;
 import com.hagi.couponsystem.Idao.ICompanyDao;
 import com.hagi.couponsystem.Utils.Extractor;
 import com.hagi.couponsystem.Utils.UtilSQLcloser;
 import com.hagi.couponsystem.beans.Company;
 import com.hagi.couponsystem.connectionpool.ConnectionPool;
-import com.hagi.couponsystem.exception.dao.CustomerDoesNotExistException;
-import com.hagi.couponsystem.exception.dao.DaoException;
+import com.hagi.couponsystem.exceptions.ApplicationException;
 
 public class CompanyDao implements ICompanyDao {
 	private ConnectionPool pool = ConnectionPool.getPool();
+	private static CompanyDao instance;
 
-	public CompanyDao() {
+	private CompanyDao() {
 		super();
 	}
 
+	public static CompanyDao getInstance() {
+		if (instance == null) {
+			instance = new CompanyDao();
+		}
+		return instance;
+	}
+
 	@Override
-	public void createCompany(Company comp) throws DaoException {
+	public void createCompany(Company comp) throws ApplicationException {
 		String sql1 = "INSERT INTO company  (comp_id,name,password,email) VALUES (?,?,?,?)";
 		Connection con = pool.getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql1);) {
@@ -38,7 +46,7 @@ public class CompanyDao implements ICompanyDao {
 			System.out.println(comp + " has been added");
 
 		} catch (SQLException e) {
-			throw new DaoException("Id is already in use or null variables has been placed");
+			throw new ApplicationException(ErrorTypes.COMPANY_ALREADY_EXISTS);
 		} finally {
 			pool.returnConnection(con);
 
@@ -47,7 +55,7 @@ public class CompanyDao implements ICompanyDao {
 	}
 
 	@Override
-	public void removeCompany(Long id) throws DaoException {
+	public void removeCompany(Long id) throws ApplicationException {
 		String sql = ("DELETE FROM company WHERE comp_id=?");
 		Connection con = pool.getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql);) {
@@ -55,7 +63,7 @@ public class CompanyDao implements ICompanyDao {
 			stmt.executeUpdate();
 
 		} catch (SQLException e) {
-			throw new DaoException("Company was not found");
+			throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 
 		} finally {
 			pool.returnConnection(con);
@@ -63,7 +71,7 @@ public class CompanyDao implements ICompanyDao {
 	}
 
 	@Override
-	public void updateCompany(Company comp) throws DaoException {
+	public void updateCompany(Company comp) throws ApplicationException {
 		String sql = "UPDATE company SET name=?, password=?,email=? WHERE comp_id=?";
 		Connection con = pool.getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql);) {
@@ -74,7 +82,7 @@ public class CompanyDao implements ICompanyDao {
 			stmt.executeUpdate();
 
 		} catch (SQLException e) {
-			throw new CustomerDoesNotExistException("This customer does not exist");
+			throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 
 		} finally {
 			pool.returnConnection(con);
@@ -83,7 +91,7 @@ public class CompanyDao implements ICompanyDao {
 	}
 
 	@Override
-	public Company readCompany(Long id) throws DaoException {
+	public Company readCompany(Long id) throws ApplicationException {
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
 		ResultSet resultSet = null;
@@ -101,7 +109,7 @@ public class CompanyDao implements ICompanyDao {
 			company = Extractor.extractCompanyFromResultSet(resultSet);
 
 		} catch (SQLException e) {
-			throw new DaoException("No company was found");
+			throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
@@ -111,7 +119,7 @@ public class CompanyDao implements ICompanyDao {
 	}
 
 	@Override
-	public Collection<Company> getAllCompanies() throws DaoException {
+	public Collection<Company> getAllCompanies() throws ApplicationException {
 		Collection<Company> collection = new ArrayList<Company>();
 		String sql = "SELECT * FROM company";
 		Connection con = pool.getConnection();
@@ -124,7 +132,7 @@ public class CompanyDao implements ICompanyDao {
 			}
 
 		} catch (SQLException e) {
-			throw new DaoException("There are no companies");
+			throw new ApplicationException(ErrorTypes.NO_COMPANIES);
 
 		} finally {
 			pool.returnConnection(con);
@@ -133,7 +141,7 @@ public class CompanyDao implements ICompanyDao {
 	}
 
 	@Override
-	public Boolean login(Long id, String password) throws DaoException {
+	public Boolean login(Long id, String password) throws ApplicationException {
 		String sql = "SELECT password FROM company WHERE comp_id=?";
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
@@ -157,8 +165,7 @@ public class CompanyDao implements ICompanyDao {
 			}
 
 		} catch (SQLException e) {
-			throw new DaoException("Unable to login-Wrong password or Id");
-
+			throw new ApplicationException(ErrorTypes.FAILED_TO_LOGIN);
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
@@ -166,8 +173,7 @@ public class CompanyDao implements ICompanyDao {
 	}
 
 	@Override
-	public Boolean companyExists(Long id) throws DaoException {
-		ArrayList<Long> list = new ArrayList<>();
+	public Boolean companyExists(Long id) throws ApplicationException {
 		String sql = "SELECT comp_id FROM company WHERE comp_id=?";
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
@@ -177,22 +183,12 @@ public class CompanyDao implements ICompanyDao {
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setLong(1, id);
 			resultSet = preparedStatement.executeQuery();
-			while (resultSet.next()) {
-				list.add((resultSet.getLong("comp_id")));
-			}
-			for (Long long1 : list) {
-				if (id.equals(long1)) {
-					return true;
-				}
-			}
-
+			return resultSet.next();
 		} catch (SQLException e) {
-			System.out.println("exists fucked up");
-			throw new DaoException("Error occurred at companyExists method");
+			throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
-		return false;
 	}
 }

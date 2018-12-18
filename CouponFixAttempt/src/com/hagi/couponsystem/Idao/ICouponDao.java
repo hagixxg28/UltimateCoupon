@@ -5,47 +5,49 @@ import java.util.Collection;
 
 import com.hagi.couponsystem.Enums.CouponType;
 import com.hagi.couponsystem.beans.Coupon;
-import com.hagi.couponsystem.exception.dao.DaoException;
+import com.hagi.couponsystem.exceptions.ApplicationException;
 
 public interface ICouponDao {
 
-	void createCoupon(Coupon coup) throws DaoException;
+	void createCoupon(Coupon coup) throws ApplicationException;
 
-	void customerPurchaseCoupon(Long coupId, Long custId) throws DaoException;
+	void customerPurchaseCoupon(Long coupId, Long custId) throws ApplicationException;
 
-	void fullyRemoveCoupon(Long id) throws DaoException;
+	void fullyRemoveCoupon(Long id) throws ApplicationException;
 
-	void removeCouponCust(Long id) throws DaoException;
+	void removeCouponCust(Long id) throws ApplicationException;
 
-	void removeCouponCoup(Long id) throws DaoException;
+	void removeCouponCoup(Long id) throws ApplicationException;
 
-	void updateCoupon(Coupon coup) throws DaoException;
+	void updateCoupon(Coupon coup) throws ApplicationException;
+	
+	boolean couponExists(Long id) throws ApplicationException;
 
-	Coupon getCoupon(Long id) throws DaoException;
+	Coupon getCoupon(Long id) throws ApplicationException;
 
-	Collection<Coupon> getAllCouponsForCompany(Long id) throws DaoException;
+	Collection<Coupon> getAllCouponsForCompany(Long id) throws ApplicationException;
 
-	Collection<Coupon> getCouponsForCustomer(Long id) throws DaoException;
+	Collection<Coupon> getCouponsForCustomer(Long id) throws ApplicationException;
 
-	Collection<Coupon> getAllCoupons() throws DaoException;
+	Collection<Coupon> getAllCoupons() throws ApplicationException;
 
-	Collection<Long> getAllExpiredCoupons() throws DaoException;
+	Collection<Long> getAllExpiredCoupons() throws ApplicationException;
 
-	Collection<Coupon> getCouponByType(CouponType type) throws DaoException;
+	Collection<Coupon> getCouponByType(CouponType type) throws ApplicationException;
 
-	Collection<Coupon> getCouponByTypeForCustomer(CouponType type, long customerId) throws DaoException;
+	Collection<Coupon> getCouponByTypeForCustomer(CouponType type, long customerId) throws ApplicationException;
 
-	Collection<Coupon> getCouponByTypeForCompany(CouponType type, long companyId) throws DaoException;
+	Collection<Coupon> getCouponByTypeForCompany(CouponType type, long companyId) throws ApplicationException;
 
-	Collection<Coupon> getCouponByPrice(double price) throws DaoException;
+	Collection<Coupon> getCouponByPrice(double price) throws ApplicationException;
 
-	Collection<Coupon> getCouponByPriceForCompany(double price, long companyId) throws DaoException;
+	Collection<Coupon> getCouponByPriceForCompany(double price, long companyId) throws ApplicationException;
 
-	Collection<Coupon> getCouponByPriceForCustomer(double price, long customerId) throws DaoException;
+	Collection<Coupon> getCouponByPriceForCustomer(double price, long customerId) throws ApplicationException;
 
-	Collection<Coupon> getCouponByDateForCustomer(Date date, long custId) throws DaoException;
+	Collection<Coupon> getCouponByDateForCustomer(Date date, long custId) throws ApplicationException;
 
-	Collection<Coupon> getCouponByDateForCompany(Date date, long compId) throws DaoException;
+	Collection<Coupon> getCouponByDateForCompany(Date date, long compId) throws ApplicationException;
 
-	Collection<Coupon> getCouponByDate(Date date) throws DaoException;
+	Collection<Coupon> getCouponByDate(Date date) throws ApplicationException;
 }

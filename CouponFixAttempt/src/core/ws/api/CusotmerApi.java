@@ -13,52 +13,42 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import com.hagi.couponsystem.beans.Customer;
-import com.hagi.couponsystem.exception.facade.FacadeException;
+import com.hagi.couponsystem.exceptions.ApplicationException;
 import com.hagi.couponsystem.logic.CustomerLogic;
 
 //http://localhost:8080/rest/customer
 @Path("customer")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class CusotmerApi {
+
+	private CustomerLogic logic = CustomerLogic.getInstance();
 
 	@GET
 	@Path("/{customerId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Customer getCustomer(@PathParam("customerId") long customerId) throws FacadeException {
-		CustomerLogic logic = new CustomerLogic();
+	public Customer getCustomer(@PathParam("customerId") long customerId) throws ApplicationException {
 		return logic.getCustomer(customerId);
 	}
 
 	@POST
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public void createCustomer(Customer customer) throws FacadeException {
-		CustomerLogic logic = new CustomerLogic();
+	public void createCustomer(Customer customer) throws ApplicationException {
 		logic.createCustomer(customer);
 	}
 
 	@PUT
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public void updateCustomer(Customer customer) throws FacadeException {
-		CustomerLogic logic = new CustomerLogic();
+	public void updateCustomer(Customer customer) throws ApplicationException {
 		logic.updateCustomer(customer);
 	}
 
 	@DELETE
 	@Path("/{customerId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public void removeCustomer(@PathParam("customerId") long customerId) throws FacadeException {
-		CustomerLogic logic = new CustomerLogic();
+
+	public void removeCustomer(@PathParam("customerId") long customerId) throws ApplicationException {
 		logic.removeCustomer(customerId);
 	}
 
 	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Collection<Customer> getAllCustomers() throws FacadeException {
-		CustomerLogic logic = new CustomerLogic();
+	public Collection<Customer> getAllCustomers() throws ApplicationException {
 		return logic.getAllCustomers();
 	}
 }
