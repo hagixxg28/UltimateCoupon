@@ -26,6 +26,7 @@ public class CustomerLogic {
 	public void createCustomer(Customer customer) throws ApplicationException {
 		if (!custDb.customerExists(customer.getId())) {
 			custDb.createCustomer(customer);
+			return;
 		}
 		throw new ApplicationException(ErrorTypes.CUSTOMER_ALREADY_EXISTS);
 	}
@@ -45,6 +46,7 @@ public class CustomerLogic {
 	public void removeCustomer(long customerId) throws ApplicationException {
 		if (custDb.customerExists(customerId)) {
 			custDb.removeCustomer(customerId);
+			return;
 		}
 		throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
 	}

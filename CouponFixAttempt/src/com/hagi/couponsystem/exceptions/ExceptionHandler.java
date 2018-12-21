@@ -19,7 +19,7 @@ public class ExceptionHandler implements ExceptionMapper<Throwable> {
 
 		}
 		String internalMessage = exception.getMessage();
-		ErrorBean Bean = new ErrorBean(650, internalMessage, "General Error");
+		ErrorBean Bean = new ErrorBean(649, internalMessage, "General Error");
 		return Response.status(649).entity(Bean).build();
 
 	}

@@ -33,13 +33,12 @@ public class CouponLogic {
 
 	public void createCoupon(Coupon coup) throws ApplicationException {
 		if (compDb.companyExists(coup.getCompId())) {
-			Collection<Coupon> List;
-			List = coupDb.getAllCouponsForCompany(coup.getCompId());
-			if (List.isEmpty()) {
+			if (!coupDb.companyHasCoupons(coup.getCompId())) {
 				coupDb.createCoupon(coup);
 				return;
 			}
-
+			Collection<Coupon> List;
+			List = coupDb.getAllCouponsForCompany(coup.getCompId());
 			for (Coupon coupon : List) {
 				if (coupon.getTitle().equals(coup.getTitle())) {
 					throw new ApplicationException(ErrorTypes.SAME_TITLE);
@@ -55,6 +54,7 @@ public class CouponLogic {
 	public void removeCoupon(Long coupId) throws ApplicationException {
 		if (coupDb.couponExists(coupId)) {
 			coupDb.fullyRemoveCoupon(coupId);
+			return;
 		}
 		throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
 	}
@@ -72,6 +72,7 @@ public class CouponLogic {
 			coupDb.updateCoupon(coup);
 			return;
 		}
+		throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 	}
 
 	public Coupon getCoupon(Long coupId) throws ApplicationException {
@@ -137,11 +138,12 @@ public class CouponLogic {
 		}
 
 		if (custDb.customerExists(customerId)) {
-
-			Collection<Coupon> coupons = coupDb.getCouponsForCustomer(customerId);
-			for (Coupon coupon : coupons) {
-				if (coupon.getId() == coup.getId()) {
-					throw new ApplicationException(ErrorTypes.CUSTOMER_OWNS_COUPON);
+			if (coupDb.customerHasCoupons(customerId)) {
+				Collection<Coupon> coupons = coupDb.getCouponsForCustomer(customerId);
+				for (Coupon coupon : coupons) {
+					if (coupon.getId() == coup.getId()) {
+						throw new ApplicationException(ErrorTypes.CUSTOMER_OWNS_COUPON);
+					}
 				}
 			}
 			coupDb.customerPurchaseCoupon(couponId, customerId);

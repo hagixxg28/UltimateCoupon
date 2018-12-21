@@ -22,6 +22,10 @@ public interface ICouponDao {
 	void updateCoupon(Coupon coup) throws ApplicationException;
 	
 	boolean couponExists(Long id) throws ApplicationException;
+	
+	boolean companyHasCoupons(Long compId) throws ApplicationException;
+	
+	boolean customerHasCoupons(Long custId) throws ApplicationException;
 
 	Coupon getCoupon(Long id) throws ApplicationException;
 

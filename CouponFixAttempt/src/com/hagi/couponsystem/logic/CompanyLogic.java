@@ -33,6 +33,7 @@ public class CompanyLogic {
 	public void createCompany(Company company) throws ApplicationException {
 		if (!compDb.companyExists(company.getId())) {
 			compDb.createCompany(company);
+			return;
 		}
 		throw new ApplicationException(ErrorTypes.COMPANY_ALREADY_EXISTS);
 	}
@@ -40,6 +41,7 @@ public class CompanyLogic {
 	public void updateCompany(Company company) throws ApplicationException {
 		if (compDb.companyExists(company.getId())) {
 			compDb.updateCompany(company);
+			return;
 		}
 		throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 
@@ -48,6 +50,7 @@ public class CompanyLogic {
 	public void removeCompany(long companyId) throws ApplicationException {
 		if (compDb.companyExists(companyId)) {
 			compDb.removeCompany(companyId);
+			return;
 		}
 		throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 	}
