@@ -15,10 +15,23 @@
       <param-name>com.sun.jersey.config.property.packages</param-name>
       <param-value>core.ws.api</param-value>
     </init-param>
+    <init-param>
+    <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
+    <param-value>true</param-value>
+    </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
     <servlet-name>jersey servlet</servlet-name>
     <url-pattern>/rest/*</url-pattern>
   </servlet-mapping>
+  
+ <filter>
+ <filter-name>Cors</filter-name>
+<filter-class>com.hagi.couponsystem.filters.CorsFilter</filter-class>
+ </filter>
+ <filter-mapping>
+ <filter-name>Cors</filter-name>
+ <url-pattern>/rest/* </url-pattern>
+ </filter-mapping>
 </web-app>

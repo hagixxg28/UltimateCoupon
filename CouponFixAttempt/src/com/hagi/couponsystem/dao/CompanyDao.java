@@ -43,8 +43,6 @@ public class CompanyDao implements ICompanyDao {
 			stmt.setString(4, comp.getEmail());
 			stmt.executeUpdate();
 
-			System.out.println(comp + " has been added");
-
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.COMPANY_ALREADY_EXISTS);
 		} finally {
@@ -58,16 +56,17 @@ public class CompanyDao implements ICompanyDao {
 	public void removeCompany(Long id) throws ApplicationException {
 		String sql = ("DELETE FROM company WHERE comp_id=?");
 		Connection con = pool.getConnection();
+
 		try (PreparedStatement stmt = con.prepareStatement(sql);) {
 			stmt.setLong(1, id);
 			stmt.executeUpdate();
-
 		} catch (SQLException e) {
-			throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 
+			throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 		} finally {
 			pool.returnConnection(con);
 		}
+
 	}
 
 	@Override
@@ -87,7 +86,7 @@ public class CompanyDao implements ICompanyDao {
 		} finally {
 			pool.returnConnection(con);
 		}
-
+		
 	}
 
 	@Override
@@ -95,7 +94,6 @@ public class CompanyDao implements ICompanyDao {
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
 		ResultSet resultSet = null;
-		Company company = null;
 		try {
 
 			connection = pool.getConnection();
@@ -103,10 +101,13 @@ public class CompanyDao implements ICompanyDao {
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setLong(1, id);
 			resultSet = preparedStatement.executeQuery();
-			if (!resultSet.next()) {
-				return null;
+
+			if (resultSet.next()) {
+				Company company = null;
+				company = Extractor.extractCompanyFromResultSet(resultSet);
+				return company;
 			}
-			company = Extractor.extractCompanyFromResultSet(resultSet);
+			
 
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
@@ -115,7 +116,8 @@ public class CompanyDao implements ICompanyDao {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
-		return company;
+		
+		throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 	}
 
 	@Override

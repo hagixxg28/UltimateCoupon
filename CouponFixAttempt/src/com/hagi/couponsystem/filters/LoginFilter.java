@@ -1,4 +1,4 @@
-package com.hagi.couponsystem.servlets;
+package com.hagi.couponsystem.filters;
 
 import java.io.IOException;
 

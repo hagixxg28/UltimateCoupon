@@ -61,9 +61,9 @@ public class CouponApi {
 
 	@GET
 	@Path("/date")
-	public Collection<Coupon> getCouponsByDate(@QueryParam("date") Long dateLong) throws ApplicationException {
-		Date date = new Date(dateLong);
-		return logic.getAllCouponByDate(date);
+	public Collection<Coupon> getCouponsByDate(@QueryParam("date") String date) throws ApplicationException {
+		Date parseDate = Date.valueOf(date);
+		return logic.getAllCouponByDate(parseDate);
 	}
 
 	@GET
@@ -89,10 +89,9 @@ public class CouponApi {
 	@GET
 	@Path("/company/{companyId}/date")
 	public Collection<Coupon> getCouponsForCompanyByDate(@PathParam("companyId") long companyId,
-			@QueryParam("date") Long dateLong) throws ApplicationException {
-
-		Date date = new Date(dateLong);
-		return logic.getAllCouponByDateForCompany(date, companyId);
+			@QueryParam("date") String date) throws ApplicationException {
+		Date parseDate = Date.valueOf(date);
+		return logic.getAllCouponByDateForCompany(parseDate, companyId);
 	}
 
 	@GET
@@ -122,10 +121,9 @@ public class CouponApi {
 	@GET
 	@Path("/customer/{customerId}/date")
 	public Collection<Coupon> getCouponsForCustomerByDate(@PathParam("customerId") long customerId,
-			@QueryParam("date") long dateLong) throws ApplicationException {
-
-		Date date = new Date(dateLong);
-		return logic.getAllCouponByDateForCustomer(date, customerId);
+			@QueryParam("date") String date) throws ApplicationException {
+		Date parseDate = Date.valueOf(date);
+		return logic.getAllCouponByDateForCustomer(parseDate, customerId);
 	}
 
 	@GET
