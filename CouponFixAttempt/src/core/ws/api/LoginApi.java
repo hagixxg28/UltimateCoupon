@@ -1,5 +1,6 @@
 package core.ws.api;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -39,7 +40,9 @@ public class LoginApi {
 				session.invalidate();
 			}
 			session = req.getSession();
-			session.setAttribute("id", userId);
+			String userIdToString = String.valueOf(userId);
+			Cookie cookie = new Cookie("id", userIdToString);
+			res.addCookie(cookie);
 			res.encodeRedirectURL("/home");
 		}
 		throw new ApplicationException(ErrorTypes.FAILED_TO_LOGIN);

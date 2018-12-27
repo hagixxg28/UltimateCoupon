@@ -27,11 +27,11 @@
   </servlet-mapping>
   
  <filter>
- <filter-name>Cors</filter-name>
+ <filter-name>CorsFilter</filter-name>
 <filter-class>com.hagi.couponsystem.filters.CorsFilter</filter-class>
  </filter>
  <filter-mapping>
- <filter-name>Cors</filter-name>
+ <filter-name>CorsFilter</filter-name>
  <url-pattern>/rest/* </url-pattern>
  </filter-mapping>
 </web-app>
