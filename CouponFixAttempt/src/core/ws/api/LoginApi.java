@@ -31,7 +31,7 @@ public class LoginApi {
 
 	@GET
 	@Path("/{userId}")
-	public void getCompany(@PathParam("userId") long userId, @QueryParam("password") String password,
+	public void login(@PathParam("userId") long userId, @QueryParam("password") String password,
 			@QueryParam("type") ClientType type) throws ApplicationException {
 		if (LoginUtil.logIn(userId, password, type)) {
 			HttpSession session = req.getSession(false);
