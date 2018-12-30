@@ -53,7 +53,7 @@ public class LoginApi {
 	@POST
 	public void login(loginDetails details) throws ApplicationException {
 
-		if (LoginUtil.logIn(details.getId(), details.getPassword(), details.getType())) {
+		if (LoginUtil.logIn(details.getId(), details.getPassword(), ClientType.valueOf(details.getType()))) {
 			HttpSession session = req.getSession(false);
 
 			if (session != null) {
