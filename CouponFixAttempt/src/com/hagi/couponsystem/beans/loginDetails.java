@@ -1,7 +1,9 @@
 package com.hagi.couponsystem.beans;
 
-import com.hagi.couponsystem.Enums.ClientType;
+import javax.xml.bind.annotation.XmlRootElement;
 
+import com.hagi.couponsystem.Enums.ClientType;
+@XmlRootElement
 public class loginDetails {
 
 	private long id;
