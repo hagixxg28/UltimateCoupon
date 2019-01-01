@@ -12,7 +12,7 @@ public class Customer implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private long id;
-	private String custName;
+	private String name;
 	private String password;
 
 	public Customer() {
@@ -35,11 +35,11 @@ public class Customer implements Serializable {
 	}
 
 	public String getCustName() {
-		return custName;
+		return name;
 	}
 
 	public void setCustName(String custName) {
-		this.custName = custName;
+		this.name = custName;
 	}
 
 	public String getPassword() {
@@ -52,7 +52,7 @@ public class Customer implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Customer [id=" + id + ", custName=" + custName + ", password=" + password + "]";
+		return "Customer [id=" + id + ", name=" + name + ", password=" + password + "]";
 	}
 
 }

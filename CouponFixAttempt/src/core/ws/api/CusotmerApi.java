@@ -17,7 +17,7 @@ import com.hagi.couponsystem.exceptions.ApplicationException;
 import com.hagi.couponsystem.logic.CustomerLogic;
 
 //http://localhost:8080/rest/customer
-@Path("customer")
+@Path("Customer")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class CusotmerApi {

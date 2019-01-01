@@ -12,7 +12,7 @@ public class Company implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 	private long id;
-	private String compName;
+	private String name;
 	private String password;
 	private String email;
 
@@ -23,7 +23,7 @@ public class Company implements Serializable {
 	public Company(long id, String compName, String password, String email) {
 		super();
 		this.id = id;
-		this.compName = compName;
+		this.name = compName;
 		this.password = password;
 		this.email = email;
 	}
@@ -37,11 +37,11 @@ public class Company implements Serializable {
 	}
 
 	public String getCompName() {
-		return compName;
+		return name;
 	}
 
 	public void setCompName(String compName) {
-		this.compName = compName;
+		this.name = compName;
 	}
 
 	public String getPassword() {
@@ -62,7 +62,7 @@ public class Company implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Company [id=" + id + ", compName=" + compName + ", password=" + password + ", email=" + email + "]";
+		return "Company [id=" + id + ", name=" + name + ", password=" + password + ", email=" + email + "]";
 	}
 
 }

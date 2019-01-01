@@ -22,4 +22,8 @@ public enum ClientType {
 			throw new ApplicationException(ErrorTypes.INVALID_CLIENT_TYPE);
 		}
 	}
+	
+	 ClientType() {
+		
+	}
 }
