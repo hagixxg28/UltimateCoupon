@@ -38,7 +38,7 @@ public class CompanyDao implements ICompanyDao {
 		try (PreparedStatement stmt = con.prepareStatement(sql1);) {
 
 			stmt.setLong(1, comp.getId());
-			stmt.setString(2, comp.getCompName());
+			stmt.setString(2, comp.getcompName());
 			stmt.setString(3, comp.getPassword());
 			stmt.setString(4, comp.getEmail());
 			stmt.executeUpdate();
@@ -74,7 +74,7 @@ public class CompanyDao implements ICompanyDao {
 		String sql = "UPDATE company SET name=?, password=?,email=? WHERE comp_id=?";
 		Connection con = pool.getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql);) {
-			stmt.setString(1, comp.getCompName());
+			stmt.setString(1, comp.getcompName());
 			stmt.setString(2, comp.getPassword());
 			stmt.setString(3, comp.getEmail());
 			stmt.setLong(4, comp.getId());

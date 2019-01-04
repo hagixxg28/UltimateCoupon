@@ -36,11 +36,11 @@ public class Company implements Serializable {
 		this.id = id;
 	}
 
-	public String getCompName() {
+	public String getcompName() {
 		return compName;
 	}
 
-	public void setCompName(String compName) {
+	public void setcompName(String compName) {
 		this.compName = compName;
 	}
 

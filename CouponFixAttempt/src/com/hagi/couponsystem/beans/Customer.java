@@ -22,7 +22,7 @@ public class Customer implements Serializable {
 	public Customer(long id, String custName, String password) {
 		super();
 		setId(id);
-		setCustName(custName);
+		setcustName(custName);
 		setPassword(password);
 	}
 
@@ -34,11 +34,11 @@ public class Customer implements Serializable {
 		this.id = id;
 	}
 
-	public String getCustName() {
+	public String getcustName() {
 		return custName;
 	}
 
-	public void setCustName(String custName) {
+	public void setcustName(String custName) {
 		this.custName = custName;
 	}
 

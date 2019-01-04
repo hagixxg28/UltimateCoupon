@@ -14,7 +14,7 @@ public class Extractor {
 	public static Company extractCompanyFromResultSet(ResultSet resultSet) throws ApplicationException, SQLException {
 		Company company = new Company();
 		company.setId(resultSet.getLong("comp_id"));
-		company.setCompName(resultSet.getString("name"));
+		company.setcompName(resultSet.getString("name"));
 		company.setPassword(resultSet.getString("password"));
 		company.setEmail(resultSet.getString("email"));
 		return company;
@@ -23,7 +23,7 @@ public class Extractor {
 	public static Customer extractCustomerFromResultSet(ResultSet resultSet) throws ApplicationException, SQLException {
 		Customer customer = new Customer();
 		customer.setId(resultSet.getLong("cust_id"));
-		customer.setCustName(resultSet.getString("name"));
+		customer.setcustName(resultSet.getString("name"));
 		customer.setPassword(resultSet.getString("password"));
 		return customer;
 	}

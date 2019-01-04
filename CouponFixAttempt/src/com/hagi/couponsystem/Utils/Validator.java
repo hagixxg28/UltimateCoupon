@@ -15,8 +15,8 @@ public class Validator {
 		if (validateEmail(newCompany.getEmail())) {
 			oldCompany.setEmail(newCompany.getEmail());
 		}
-		if (validateEmail(newCompany.getCompName())) {
-			oldCompany.setCompName(newCompany.getCompName());
+		if (validateName(newCompany.getcompName())) {
+			oldCompany.setcompName(newCompany.getcompName());
 		}
 	}
 
@@ -24,8 +24,8 @@ public class Validator {
 		if (validatePassword(newCustomer.getPassword())) {
 			oldCustomer.setPassword(newCustomer.getPassword());
 		}
-		if (validateName(newCustomer.getCustName())) {
-			oldCustomer.setCustName(newCustomer.getCustName());
+		if (validateName(newCustomer.getcustName())) {
+			oldCustomer.setcustName(newCustomer.getcustName());
 		}
 	}
 

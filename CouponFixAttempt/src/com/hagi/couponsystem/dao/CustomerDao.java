@@ -37,7 +37,7 @@ public class CustomerDao implements ICustomerDao {
 		Connection con = pool.getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql);) {
 			stmt.setLong(1, cust.getId());
-			stmt.setString(2, cust.getCustName());
+			stmt.setString(2, cust.getcustName());
 			stmt.setString(3, cust.getPassword());
 			stmt.executeUpdate();
 		} catch (SQLException e) {
@@ -67,7 +67,7 @@ public class CustomerDao implements ICustomerDao {
 		String sql = "UPDATE customer SET name=?, password=? WHERE cust_id=?";
 		Connection con = pool.getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql);) {
-			stmt.setString(1, cust.getCustName());
+			stmt.setString(1, cust.getcustName());
 			stmt.setString(2, cust.getPassword());
 			stmt.setLong(3, cust.getId());
 			stmt.executeUpdate();
