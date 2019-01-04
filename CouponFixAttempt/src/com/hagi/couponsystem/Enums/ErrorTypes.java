@@ -19,7 +19,8 @@ public enum ErrorTypes {
 	SAME_TITLE(664, "A coupon with this title already exists"),
 	INVALID_TYPE(665, "Invalid coupon type"),
 	SYSTEM_FAILFURE(666, "SYSTEM FAILURE"),
-	INVALID_CLIENT_TYPE(667, "Invalid clinet type");
+	INVALID_CLIENT_TYPE(667, "Invalid clinet type"),
+	INVALID_PASSWORD(668,"Invalid password");
 
 	private int errorCode;
 	private String errorMessage;

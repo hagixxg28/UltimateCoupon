@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import com.hagi.couponsystem.Enums.ErrorTypes;
 import com.hagi.couponsystem.Idao.ICustomerDao;
+import com.hagi.couponsystem.Utils.Validator;
 import com.hagi.couponsystem.beans.Customer;
 import com.hagi.couponsystem.dao.CustomerDao;
 import com.hagi.couponsystem.exceptions.ApplicationException;
@@ -36,11 +37,9 @@ public class CustomerLogic {
 	}
 
 	public void updateCustomer(Customer customer) throws ApplicationException {
-		if (custDb.customerExists(customer.getId())) {
-			custDb.updateCustomer(customer);
-			return;
-		}
-		throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
+		Customer updateCustomer = custDb.getCustomer(customer.getId());
+		Validator.validateAndSetCustomer(customer, updateCustomer);
+		custDb.updateCustomer(updateCustomer);
 	}
 
 	public void removeCustomer(long customerId) throws ApplicationException {
