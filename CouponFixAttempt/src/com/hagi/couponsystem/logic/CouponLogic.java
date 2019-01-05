@@ -8,6 +8,7 @@ import com.hagi.couponsystem.Enums.ErrorTypes;
 import com.hagi.couponsystem.Idao.ICompanyDao;
 import com.hagi.couponsystem.Idao.ICouponDao;
 import com.hagi.couponsystem.Idao.ICustomerDao;
+import com.hagi.couponsystem.Utils.Validator;
 import com.hagi.couponsystem.beans.Coupon;
 import com.hagi.couponsystem.dao.CompanyDao;
 import com.hagi.couponsystem.dao.CouponDao;
@@ -60,19 +61,19 @@ public class CouponLogic {
 	}
 
 	public void updateCoupon(Coupon coup) throws ApplicationException {
-		if (coupDb.couponExists(coup.getId())) {
-			Collection<Coupon> List;
-			List = coupDb.getAllCouponsForCompany(coup.getCompId());
+		Coupon updateCoupon = coupDb.getCoupon(coup.getId());
+		Validator.validateAndSetCoupon(coup, updateCoupon);
+		Collection<Coupon> List;
+		List = coupDb.getAllCouponsForCompany(coup.getCompId());
 
-			for (Coupon coupon : List) {
-				if (coupon.getTitle().equals(coup.getTitle()) && coupon.getId() != coup.getId()) {
-					throw new ApplicationException(ErrorTypes.SAME_TITLE);
-				}
+		for (Coupon coupon : List) {
+			if (coupon.getTitle().equals(coup.getTitle()) && coupon.getId() != coup.getId()) {
+				throw new ApplicationException(ErrorTypes.SAME_TITLE);
 			}
-			coupDb.updateCoupon(coup);
-			return;
 		}
-		throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
+		coupDb.updateCoupon(updateCoupon);
+		return;
+
 	}
 
 	public Coupon getCoupon(Long coupId) throws ApplicationException {
