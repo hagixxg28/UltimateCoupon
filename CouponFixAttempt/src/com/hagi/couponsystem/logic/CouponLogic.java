@@ -64,7 +64,7 @@ public class CouponLogic {
 		Coupon updateCoupon = coupDb.getCoupon(coup.getId());
 		Validator.validateAndSetCoupon(coup, updateCoupon);
 		Collection<Coupon> List;
-		List = coupDb.getAllCouponsForCompany(coup.getCompId());
+		List = coupDb.getAllCouponsForCompany(updateCoupon.getCompId());
 
 		for (Coupon coupon : List) {
 			if (coupon.getTitle().equals(coup.getTitle()) && coupon.getId() != coup.getId()) {
