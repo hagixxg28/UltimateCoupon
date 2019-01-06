@@ -662,9 +662,7 @@ public class CouponDao implements ICouponDao {
 					collection.add(coupon);
 				}
 			}
-			if (!collection.isEmpty()) {
-				return collection;
-			}
+			return collection;
 
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.NO_COUPONS);
@@ -674,7 +672,6 @@ public class CouponDao implements ICouponDao {
 			UtilSQLcloser.SQLCloser(preparedStatement2);
 			pool.returnConnection(connection);
 		}
-		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 
 	@Override

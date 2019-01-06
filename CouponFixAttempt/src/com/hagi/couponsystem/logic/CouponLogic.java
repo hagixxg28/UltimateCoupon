@@ -141,9 +141,12 @@ public class CouponLogic {
 		if (custDb.customerExists(customerId)) {
 			if (coupDb.customerHasCoupons(customerId)) {
 				Collection<Coupon> coupons = coupDb.getCouponsForCustomer(customerId);
-				for (Coupon coupon : coupons) {
-					if (coupon.getId() == coup.getId()) {
-						throw new ApplicationException(ErrorTypes.CUSTOMER_OWNS_COUPON);
+				if (!coupons.isEmpty()) {
+
+					for (Coupon coupon : coupons) {
+						if (coupon.getId() == coup.getId()) {
+							throw new ApplicationException(ErrorTypes.CUSTOMER_OWNS_COUPON);
+						}
 					}
 				}
 			}
