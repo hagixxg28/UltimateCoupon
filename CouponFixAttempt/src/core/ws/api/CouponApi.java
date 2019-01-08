@@ -62,7 +62,9 @@ public class CouponApi {
 	@GET
 	@Path("/date")
 	public Collection<Coupon> getCouponsByDate(@QueryParam("date") String date) throws ApplicationException {
+		System.out.println(date);
 		Date parseDate = Date.valueOf(date);
+		System.out.println(parseDate);
 		return logic.getAllCouponByDate(parseDate);
 	}
 

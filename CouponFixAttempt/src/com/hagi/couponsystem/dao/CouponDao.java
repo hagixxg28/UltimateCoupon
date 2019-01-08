@@ -387,7 +387,7 @@ public class CouponDao implements ICouponDao {
 	@Override
 	public Collection<Coupon> getCouponByDateForCustomer(Date date, long custId) throws ApplicationException {
 		String sql = "SELECT coup_id FROM customer_coupon WHERE cust_id=?";
-		String sql2 = "SELECT * FROM coupon WHERE coup_id=? AND end_date >= ?";
+		String sql2 = "SELECT * FROM coupon WHERE coup_id=? AND end_date <= ?";
 		Collection<Coupon> list = new ArrayList<Coupon>();
 		Collection<Long> collection = new ArrayList<Long>();
 		Connection connection = null;
@@ -409,7 +409,7 @@ public class CouponDao implements ICouponDao {
 				preparedStatement2.setLong(1, long1);
 				preparedStatement2.setDate(2, date);
 				resultSet2 = preparedStatement2.executeQuery();
-				while (resultSet2.next()) {
+				if (resultSet2.next()) {
 					Coupon coupon = null;
 					coupon = Extractor.extractCouponFromResultSet(resultSet);
 					list.add(coupon);
@@ -431,7 +431,7 @@ public class CouponDao implements ICouponDao {
 
 	@Override
 	public Collection<Coupon> getCouponByDateForCompany(Date date, long compId) throws ApplicationException {
-		String sql = "SELECT * FROM coupon WHERE end_date >=? AND comp_id=?";
+		String sql = "SELECT * FROM coupon WHERE end_date <=? AND comp_id=?";
 		Collection<Coupon> list = new ArrayList<Coupon>();
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
@@ -463,7 +463,7 @@ public class CouponDao implements ICouponDao {
 
 	@Override
 	public Collection<Coupon> getCouponByDate(Date date) throws ApplicationException {
-		String sql = "SELECT * FROM coupon WHERE end_date >=?";
+		String sql = "SELECT * FROM coupon WHERE end_date <=?";
 		Collection<Coupon> list = new ArrayList<Coupon>();
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
