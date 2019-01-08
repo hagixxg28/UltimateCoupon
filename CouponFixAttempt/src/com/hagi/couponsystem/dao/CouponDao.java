@@ -58,28 +58,34 @@ public class CouponDao implements ICouponDao {
 	}
 
 	@Override
-	public void fullyRemoveCoupon(Long id) throws ApplicationException {
-		String sql = "DELETE FROM coupon WHERE coup_id=?";
-		String sql2 = "DELETE FROM customer_coupon WHERE coup_id=?";
-		Connection connection = null;
-		PreparedStatement preparedStatement = null;
-		PreparedStatement preparedStatement2 = null;
-		try {
-			connection = pool.getConnection();
-			preparedStatement = connection.prepareStatement(sql);
-			preparedStatement.setLong(1, id);
-			preparedStatement.executeUpdate();
-			preparedStatement2 = connection.prepareStatement(sql2);
-			preparedStatement.setLong(1, id);
-			preparedStatement.executeUpdate();
-		} catch (SQLException e) {
-			throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
-		} finally {
-			UtilSQLcloser.SQLCloser(preparedStatement);
-			UtilSQLcloser.SQLCloser(preparedStatement2);
-			pool.returnConnection(connection);
-		}
+	public void fullyRemoveCoupon(Long couponId) throws ApplicationException {
+		removeCouponCust(couponId);
+		removeCouponCoup(couponId);
 	}
+
+//	@Override
+//	public void fullyRemoveCoupon(Long couponId) throws ApplicationException {
+//		String sql = "DELETE FROM coupon WHERE coup_id=?";
+//		String sql2 = "DELETE FROM customer_coupon WHERE coup_id=?";
+//		Connection connection = null;
+//		PreparedStatement preparedStatement = null;
+//		PreparedStatement preparedStatement2 = null;
+//		try {
+//			connection = pool.getConnection();
+//			preparedStatement = connection.prepareStatement(sql);
+//			preparedStatement.setLong(1, couponId);
+//			preparedStatement.executeUpdate();
+//			preparedStatement2 = connection.prepareStatement(sql2);
+//			preparedStatement.setLong(1, couponId);
+//			preparedStatement.executeUpdate();
+//		} catch (SQLException e) {
+//			throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
+//		} finally {
+//			UtilSQLcloser.SQLCloser(preparedStatement);
+//			UtilSQLcloser.SQLCloser(preparedStatement2);
+//			pool.returnConnection(connection);
+//		}
+//	}
 
 	@Override
 	public void updateCoupon(Coupon coup) throws ApplicationException {
