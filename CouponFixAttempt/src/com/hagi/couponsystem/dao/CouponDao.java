@@ -417,7 +417,7 @@ public class CouponDao implements ICouponDao {
 				resultSet2 = preparedStatement2.executeQuery();
 				if (resultSet2.next()) {
 					Coupon coupon = null;
-					coupon = Extractor.extractCouponFromResultSet(resultSet);
+					coupon = Extractor.extractCouponFromResultSet(resultSet2);
 					list.add(coupon);
 				}
 			}
