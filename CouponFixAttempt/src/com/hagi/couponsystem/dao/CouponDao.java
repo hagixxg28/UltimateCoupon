@@ -284,48 +284,6 @@ public class CouponDao implements ICouponDao {
 		}
 	}
 
-//	@Override
-//	public Collection<Coupon> getCouponsForCustomer(Long id) throws ApplicationException {
-//		Collection<Coupon> collection = new ArrayList<Coupon>();
-//		String sql = "SELECT customer_coupon.coup_id FROM customer_coupon INNER JOIN coupon"
-//				+ " ON coupon.coup_id=customer_coupon.coup_id" + " WHERE cust_id=?";
-//		Connection connection = null;
-//		PreparedStatement preparedStatement = null;
-//		ResultSet resultSet = null;
-//		try {
-//			connection = pool.getConnection();
-//			preparedStatement = connection.prepareStatement(sql);
-//			preparedStatement.setLong(1, id);
-//			resultSet = preparedStatement.executeQuery();
-//			while (resultSet.next()) {
-//				Coupon other = new Coupon();
-//				other.setId(resultSet.getLong("coup_id"));
-//				collection.add(other);
-//			}
-//			String sql2 = "Select *  FROM coupon where coup_id=?";
-//			for (Coupon coupon : collection) {
-//				try {
-//					preparedStatement = connection.prepareStatement(sql2);
-//					preparedStatement.setLong(1, coupon.getId());
-//					resultSet = preparedStatement.executeQuery();
-//					while (resultSet.next()) {
-//						coupon = Extractor.extractCouponFromResultSet(resultSet);
-//					}
-//					if (!collection.isEmpty()) {
-//						return collection;
-//					}
-//				} 
-//			}
-//		} catch (SQLException e) {
-//			throw new ApplicationException(ErrorTypes.NO_COUPONS);
-//		}
-//		finally {
-//			UtilSQLcloser.SQLCloser(preparedStatement);
-//			pool.returnConnection(connection);
-//		}
-//		throw new ApplicationException(ErrorTypes.NO_COUPONS);
-//	}
-
 	@Override
 	public Collection<Coupon> getCouponByPrice(double price) throws ApplicationException {
 		Collection<Coupon> collection = new ArrayList<Coupon>();
