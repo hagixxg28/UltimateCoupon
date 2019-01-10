@@ -26,6 +26,7 @@ public class CustomerLogic {
 
 	public void createCustomer(Customer customer) throws ApplicationException {
 		if (!custDb.customerExists(customer.getId())) {
+			Validator.validateCustomer(customer);
 			custDb.createCustomer(customer);
 			return;
 		}

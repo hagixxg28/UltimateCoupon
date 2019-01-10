@@ -20,7 +20,9 @@ public enum ErrorTypes {
 	INVALID_TYPE(665, "Invalid coupon type"),
 	SYSTEM_FAILFURE(666, "SYSTEM FAILURE"),
 	INVALID_CLIENT_TYPE(667, "Invalid clinet type"),
-	INVALID_PASSWORD(668,"Invalid password");
+	INVALID_PASSWORD(668,"Invalid password"),
+	INVALID_COMPANY_CREATION(669,"Info did not meet the requirements"),
+	INVALID_CUSTOMER_CREATION(670,"Info did not meet the requirements");
 
 	private int errorCode;
 	private String errorMessage;

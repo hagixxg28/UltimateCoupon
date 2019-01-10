@@ -3,9 +3,11 @@ package com.hagi.couponsystem.Utils;
 import java.sql.Date;
 
 import com.hagi.couponsystem.Enums.CouponType;
+import com.hagi.couponsystem.Enums.ErrorTypes;
 import com.hagi.couponsystem.beans.Company;
 import com.hagi.couponsystem.beans.Coupon;
 import com.hagi.couponsystem.beans.Customer;
+import com.hagi.couponsystem.exceptions.ApplicationException;
 
 public class Validator {
 
@@ -58,6 +60,26 @@ public class Validator {
 		if (validateName(newCompany.getcompName())) {
 			oldCompany.setcompName(newCompany.getcompName());
 		}
+	}
+
+	public static void validateCompany(Company Company) throws ApplicationException {
+		if (validatePassword(Company.getPassword())) {
+			if (validateEmail(Company.getEmail())) {
+				if (validateName(Company.getcompName())) {
+					return;
+				}
+			}
+		}
+		throw new ApplicationException(ErrorTypes.INVALID_COMPANY_CREATION);
+	}
+
+	public static void validateCustomer(Customer customer) throws ApplicationException {
+		if (validatePassword(customer.getPassword())) {
+			if (validateName(customer.getcustName())) {
+				return;
+			}
+		}
+		throw new ApplicationException(ErrorTypes.INVALID_CUSTOMER_CREATION);
 	}
 
 	public static void validateAndSetCustomer(Customer newCustomer, Customer oldCustomer) {
