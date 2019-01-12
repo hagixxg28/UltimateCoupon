@@ -10,13 +10,17 @@ public class ConnectionPool {
 	private Stack<Connection> conStack = new Stack<>();
 	private static ConnectionPool instance;
 	public static final int MAX = 10;
-	String driverName = "org.apache.derby.jdbc.ClientDriver";
-	String url = "jdbc:derby://localhost:1527/coupons_database";
+//	String driverName = "org.apache.derby.jdbc.ClientDriver";
+//	String url = "jdbc:derby://localhost:1527/coupons_database";
+
+	String driverName = "com.mysql.cj.jdbc.Driver";
+	String url = "jdbc:mysql://localhost:3306/coupons?user=root&password=1234&serverTimezone=UTC";
 
 	private ConnectionPool() {
 		super();
 		try {
-			Class.forName("org.apache.derby.jdbc.ClientDriver").newInstance();
+//			Class.forName("org.apache.derby.jdbc.ClientDriver").newInstance();
+			Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
 		} catch (InstantiationException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

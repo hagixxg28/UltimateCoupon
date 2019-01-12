@@ -1,4 +1,4 @@
-package com.hagi.couponsystem.dao;
+package com.hagi.couponsystem.oldDao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,12 +9,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import com.hagi.couponsystem.Enums.ErrorTypes;
-import com.hagi.couponsystem.Idao.ICompanyDao;
 import com.hagi.couponsystem.Utils.Extractor;
 import com.hagi.couponsystem.Utils.UtilSQLcloser;
 import com.hagi.couponsystem.beans.Company;
 import com.hagi.couponsystem.connectionpool.ConnectionPool;
 import com.hagi.couponsystem.exceptions.ApplicationException;
+import com.hagi.couponsystem.oldIDao.ICompanyDao;
 
 public class CompanyDao implements ICompanyDao {
 	private ConnectionPool pool = ConnectionPool.getPool();
@@ -32,20 +32,17 @@ public class CompanyDao implements ICompanyDao {
 	}
 
 	@Override
-	public long createCompany(Company comp) throws ApplicationException {
-		String sql1 = "INSERT INTO company  (name,password,email) VALUES (?,?,?)";
-		String sql2 = "SELECT LAST_INSERT_ID()";
+	public void createCompany(Company comp) throws ApplicationException {
+		String sql1 = "INSERT INTO company  (comp_id,name,password,email) VALUES (?,?,?,?)";
 		Connection con = pool.getConnection();
-		try (PreparedStatement stmt = con.prepareStatement(sql1);
-				PreparedStatement stmt2 = con.prepareStatement(sql2);) {
+		try (PreparedStatement stmt = con.prepareStatement(sql1);) {
 
+			stmt.setLong(1, comp.getId());
 			stmt.setString(2, comp.getcompName());
 			stmt.setString(3, comp.getPassword());
 			stmt.setString(4, comp.getEmail());
 			stmt.executeUpdate();
-			ResultSet resultSet = stmt2.executeQuery();
-			long generatedId = resultSet.getLong(0);
-			return generatedId;
+
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.COMPANY_ALREADY_EXISTS);
 		} finally {
@@ -89,7 +86,7 @@ public class CompanyDao implements ICompanyDao {
 		} finally {
 			pool.returnConnection(con);
 		}
-
+		
 	}
 
 	@Override
@@ -110,6 +107,7 @@ public class CompanyDao implements ICompanyDao {
 				company = Extractor.extractCompanyFromResultSet(resultSet);
 				return company;
 			}
+			
 
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
@@ -118,7 +116,7 @@ public class CompanyDao implements ICompanyDao {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
-
+		
 		throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 	}
 

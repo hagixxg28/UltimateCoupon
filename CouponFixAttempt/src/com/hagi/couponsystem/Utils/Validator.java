@@ -1,6 +1,7 @@
 package com.hagi.couponsystem.Utils;
 
 import java.sql.Date;
+import java.util.Collection;
 
 import com.hagi.couponsystem.Enums.CouponType;
 import com.hagi.couponsystem.Enums.ErrorTypes;
@@ -110,6 +111,14 @@ public class Validator {
 			return true;
 		}
 		return false;
+	}
+
+	public static void amountValidator(Collection<Coupon> collection) {
+		for (Coupon coupon : collection) {
+			if (coupon.getAmount() <= 0) {
+				collection.remove(coupon);
+			}
+		}
 	}
 
 }
