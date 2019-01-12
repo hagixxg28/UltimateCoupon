@@ -15,6 +15,7 @@ public class Validator {
 	private static final int MIN_NAME_LENGTH = 3;
 	private static final int MIN_TEXT_LENGTH = 3;
 	private static final int MIN_PRICE_VALUE = 1;
+	private static final int MIN_AMOUNT_VALUE = 1;
 	private static final int MIN_PASSWORD_LENGTH = 3;
 
 	public static void validateAndSetCoupon(Coupon newCoupon, Coupon oldCoupon) {
@@ -73,6 +74,14 @@ public class Validator {
 			}
 		}
 		throw new ApplicationException(ErrorTypes.INVALID_COMPANY_CREATION);
+	}
+
+	public static void validateCoupon(Coupon coupon) throws ApplicationException {
+		endDateValidaotr(coupon.getEndDate());
+		priceValidator(coupon.getPrice());
+		amountValidator(coupon.getAmount());
+		textValidator(coupon.getTitle());
+		textValidator(coupon.getMessage());
 	}
 
 	public static void validateCustomer(Customer customer) throws ApplicationException {
@@ -150,6 +159,18 @@ public class Validator {
 		Date now = new Date(System.currentTimeMillis());
 		if (date.before(now)) {
 			throw new ApplicationException(ErrorTypes.INVALD_END_DATE);
+		}
+	}
+
+	public static void amountValidator(int amount) throws ApplicationException {
+		if (amount <= MIN_AMOUNT_VALUE) {
+			throw new ApplicationException(ErrorTypes.INVALD_AMOUNT);
+		}
+	}
+
+	public static void textValidator(String text) throws ApplicationException {
+		if (text.length() <= MIN_TEXT_LENGTH) {
+			throw new ApplicationException(ErrorTypes.INVALD_TEXT_LENGTH);
 		}
 	}
 

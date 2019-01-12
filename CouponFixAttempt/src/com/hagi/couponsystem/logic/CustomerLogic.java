@@ -34,7 +34,10 @@ public class CustomerLogic {
 	}
 
 	public Customer getCustomer(long customerId) throws ApplicationException {
-		return custDb.getCustomer(customerId);
+		if (custDb.customerExists(customerId)) {
+			return custDb.getCustomer(customerId);
+		}
+		throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
 	}
 
 	public void updateCustomer(Customer customer) throws ApplicationException {
@@ -52,6 +55,8 @@ public class CustomerLogic {
 	}
 
 	public Collection<Customer> getAllCustomers() throws ApplicationException {
-		return custDb.getAllCustomer();
+		Collection<Customer> list = custDb.getAllCustomer();
+		Validator.validateCollectionCustomer(list);
+		return list;
 	}
 }

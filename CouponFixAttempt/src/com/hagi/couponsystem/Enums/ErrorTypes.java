@@ -24,7 +24,11 @@ public enum ErrorTypes {
 	INVALID_COMPANY_CREATION(669,"Info did not meet the requirements"),
 	INVALID_CUSTOMER_CREATION(670,"Info did not meet the requirements"),
 	INVALID_PRICE(671,"This price is illegal"),
-	INVALD_END_DATE(672, "The End Date is before our current date");
+	INVALD_END_DATE(672, "The End Date is before our current date"),
+	INVALD_EMAIL(673, "Invalid email"),
+	INVALD_NAME(674, "Invalid name"),
+	INVALD_AMOUNT(675, "Invalid amount"),
+	INVALD_TEXT_LENGTH(676, "Invalid text length");
 
 	private int errorCode;
 	private String errorMessage;

@@ -33,8 +33,8 @@ public class CouponLogic {
 	}
 
 	public void createCoupon(Coupon coup) throws ApplicationException {
+		Validator.validateCoupon(coup);
 		if (compDb.companyExists(coup.getCompId())) {
-
 			if (!coupDb.companyHasCoupons(coup.getCompId())) {
 				coupDb.createCoupon(coup);
 				return;
