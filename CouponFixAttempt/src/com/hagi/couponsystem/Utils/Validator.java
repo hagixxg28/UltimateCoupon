@@ -82,6 +82,9 @@ public class Validator {
 		amountValidator(coupon.getAmount());
 		textValidator(coupon.getTitle());
 		textValidator(coupon.getMessage());
+		if (!CouponType.typeValidator(coupon.getType())) {
+			throw new ApplicationException(ErrorTypes.INVALID_TYPE);
+		}
 	}
 
 	public static void validateCustomer(Customer customer) throws ApplicationException {

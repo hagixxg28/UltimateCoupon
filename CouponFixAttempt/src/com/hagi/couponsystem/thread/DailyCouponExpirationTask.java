@@ -17,22 +17,21 @@ public class DailyCouponExpirationTask implements Runnable {
 
 	@Override
 	public void run() {
+
 		while (!quit) {
 			Collection<Long> list = new ArrayList<>();
+
 			try {
 
 				list = coupDb.getAllExpiredCoupons();
-				if (!list.isEmpty()) {
-					for (Long long1 : list) {
-						coupDb.fullyRemoveCoupon(long1);
-					}
+				for (Long long1 : list) {
+					coupDb.fullyRemoveCoupon(long1);
 				}
-				try {
-					Thread.sleep(86400000);
 
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
+				Thread.sleep(86400000);
+
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 
 			} catch (ApplicationException e) {
 				e.printStackTrace();

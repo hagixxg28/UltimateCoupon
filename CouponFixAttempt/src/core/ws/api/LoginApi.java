@@ -28,25 +28,6 @@ public class LoginApi {
 	@Context
 	private HttpServletResponse res;
 
-//	@GET
-//	@Path("/{userId}")
-//	public void login(@PathParam("userId") long userId, @QueryParam("password") String password,
-//			@QueryParam("type") ClientType type) throws ApplicationException {
-//		if (LoginUtil.logIn(userId, password, type)) {
-//			HttpSession session = req.getSession(false);
-//
-//			if (session != null) {
-//				session.invalidate();
-//			}
-//			session = req.getSession();
-//			String userIdToString = String.valueOf(userId);
-//			Cookie cookie = new Cookie("id", userIdToString);
-//			res.addCookie(cookie);
-//			res.encodeRedirectURL("http://localhost:4200/home");
-//		}
-//		throw new ApplicationException(ErrorTypes.FAILED_TO_LOGIN);
-//	}
-
 	@POST
 	public void login(loginDetails details) throws ApplicationException {
 
