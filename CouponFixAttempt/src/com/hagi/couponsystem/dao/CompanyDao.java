@@ -32,20 +32,17 @@ public class CompanyDao implements ICompanyDao {
 	}
 
 	@Override
-	public long createCompany(Company comp) throws ApplicationException {
-		String sql1 = "INSERT INTO company  (name,password,email) VALUES (?,?,?)";
-		String sql2 = "SELECT LAST_INSERT_ID()";
+	public void createCompany(Company comp) throws ApplicationException {
+		String sql1 = "INSERT INTO company  (comp_id,name,password,email) VALUES (?,?,?,?)";
 		Connection con = pool.getConnection();
-		try (PreparedStatement stmt = con.prepareStatement(sql1);
-				PreparedStatement stmt2 = con.prepareStatement(sql2);) {
+		try (PreparedStatement stmt = con.prepareStatement(sql1);) {
 
+			stmt.setLong(1, comp.getId());
 			stmt.setString(2, comp.getcompName());
 			stmt.setString(3, comp.getPassword());
 			stmt.setString(4, comp.getEmail());
 			stmt.executeUpdate();
-			ResultSet resultSet = stmt2.executeQuery();
-			long generatedId = resultSet.getLong(0);
-			return generatedId;
+
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.COMPANY_ALREADY_EXISTS);
 		} finally {
@@ -57,14 +54,14 @@ public class CompanyDao implements ICompanyDao {
 
 	@Override
 	public void removeCompany(Long id) throws ApplicationException {
-		String sql = ("DELETE FROM company WHERE comp_id=?");
+		String sql = "DELETE FROM company WHERE comp_id=?";
 		Connection con = pool.getConnection();
 
 		try (PreparedStatement stmt = con.prepareStatement(sql);) {
 			stmt.setLong(1, id);
 			stmt.executeUpdate();
-		} catch (SQLException e) {
 
+		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 		} finally {
 			pool.returnConnection(con);
@@ -157,16 +154,13 @@ public class CompanyDao implements ICompanyDao {
 			preparedStatement.setLong(1, id);
 			resultSet = preparedStatement.executeQuery();
 			if (!resultSet.next()) {
-				System.out.println("Wrong pass");
 				return false;
 			}
 			String str = resultSet.getString("password");
 			if (password.equals(str)) {
 				return true;
-			} else {
-				System.out.println("Wrong pass");
-				return false;
 			}
+			return false;
 
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.FAILED_TO_LOGIN);
@@ -183,13 +177,16 @@ public class CompanyDao implements ICompanyDao {
 		PreparedStatement preparedStatement = null;
 		ResultSet resultSet = null;
 		try {
+
 			connection = pool.getConnection();
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setLong(1, id);
 			resultSet = preparedStatement.executeQuery();
 			return resultSet.next();
+
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
+
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);

@@ -7,6 +7,9 @@ import com.hagi.couponsystem.Enums.ClientType;
 @XmlRootElement
 public class loginDetails {
 
+	
+	//1
+	
 	private long id;
 	private String password;
 	private ClientType type;

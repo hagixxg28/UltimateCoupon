@@ -14,6 +14,7 @@ public class Validator {
 
 	private static final int MIN_NAME_LENGTH = 3;
 	private static final int MIN_TEXT_LENGTH = 3;
+	private static final int MIN_PRICE_VALUE = 1;
 	private static final int MIN_PASSWORD_LENGTH = 3;
 
 	public static void validateAndSetCoupon(Coupon newCoupon, Coupon oldCoupon) {
@@ -113,11 +114,42 @@ public class Validator {
 		return false;
 	}
 
-	public static void amountValidator(Collection<Coupon> collection) {
+	public static void amountValidatorAndCollectionCleaner(Collection<Coupon> collection) {
 		for (Coupon coupon : collection) {
 			if (coupon.getAmount() <= 0) {
 				collection.remove(coupon);
 			}
+		}
+	}
+
+	public static void priceValidator(double price) throws ApplicationException {
+		if (price <= MIN_PRICE_VALUE) {
+			throw new ApplicationException(ErrorTypes.INVALID_PRICE);
+		}
+	}
+
+	public static void validateCollectionCoupon(Collection<Coupon> collection) throws ApplicationException {
+		if (collection.isEmpty()) {
+			throw new ApplicationException(ErrorTypes.NO_COUPONS);
+		}
+	}
+
+	public static void validateCollectionCompany(Collection<Company> collection) throws ApplicationException {
+		if (collection.isEmpty()) {
+			throw new ApplicationException(ErrorTypes.NO_COMPANIES);
+		}
+	}
+
+	public static void validateCollectionCustomer(Collection<Customer> collection) throws ApplicationException {
+		if (collection.isEmpty()) {
+			throw new ApplicationException(ErrorTypes.NO_CUSTOMERS);
+		}
+	}
+
+	public static void endDateValidaotr(Date date) throws ApplicationException {
+		Date now = new Date(System.currentTimeMillis());
+		if (date.before(now)) {
+			throw new ApplicationException(ErrorTypes.INVALD_END_DATE);
 		}
 	}
 

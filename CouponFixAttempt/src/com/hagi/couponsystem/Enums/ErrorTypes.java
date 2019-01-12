@@ -22,7 +22,9 @@ public enum ErrorTypes {
 	INVALID_CLIENT_TYPE(667, "Invalid clinet type"),
 	INVALID_PASSWORD(668,"Invalid password"),
 	INVALID_COMPANY_CREATION(669,"Info did not meet the requirements"),
-	INVALID_CUSTOMER_CREATION(670,"Info did not meet the requirements");
+	INVALID_CUSTOMER_CREATION(670,"Info did not meet the requirements"),
+	INVALID_PRICE(671,"This price is illegal"),
+	INVALD_END_DATE(672, "The End Date is before our current date");
 
 	private int errorCode;
 	private String errorMessage;

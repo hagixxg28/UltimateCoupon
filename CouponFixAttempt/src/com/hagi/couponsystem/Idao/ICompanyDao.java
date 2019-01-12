@@ -7,7 +7,7 @@ import com.hagi.couponsystem.exceptions.ApplicationException;
 
 public interface ICompanyDao {
 
-	long createCompany(Company comp) throws ApplicationException;
+	void createCompany(Company comp) throws ApplicationException;
 
 	void removeCompany(Long id) throws ApplicationException;
 

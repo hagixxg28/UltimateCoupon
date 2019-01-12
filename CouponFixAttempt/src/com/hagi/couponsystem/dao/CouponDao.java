@@ -38,6 +38,7 @@ public class CouponDao implements ICouponDao {
 		String sql = "INSERT INTO coupon VALUES (?, ?, ?, ? ,?, ?, ?, ?, ?, ?)";
 		Connection con = pool.getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql);) {
+
 			stmt.setLong(1, coup.getId());
 			stmt.setString(2, coup.getTitle());
 			stmt.setDate(3, coup.getStartDate());
@@ -49,8 +50,10 @@ public class CouponDao implements ICouponDao {
 			stmt.setString(9, coup.getImage());
 			stmt.setLong(10, coup.getCompId());
 			stmt.executeUpdate();
+
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.COUPON_ALREADY_EXISTS);
+
 		} finally {
 			pool.returnConnection(con);
 		}
@@ -59,10 +62,10 @@ public class CouponDao implements ICouponDao {
 
 	@Override
 	public void fullyRemoveCoupon(Long couponId) throws ApplicationException {
-		removeCouponCust(couponId);
-		removeCouponCoup(couponId);
+		removeCouponFromCustomerTable(couponId);
+		removeCouponFromCouponTable(couponId);
 	}
-
+// Old Method
 //	@Override
 //	public void fullyRemoveCoupon(Long couponId) throws ApplicationException {
 //		String sql = "DELETE FROM coupon WHERE coup_id=?";
@@ -89,9 +92,11 @@ public class CouponDao implements ICouponDao {
 
 	@Override
 	public void updateCoupon(Coupon coup) throws ApplicationException {
+
 		String sql = "UPDATE coupon SET title=?, start_date=?, end_date=?, amount=?, type=?, message=?, price=?, image=?, comp_id=? WHERE coup_id=?";
-		Connection con = pool.getConnection();
-		try (PreparedStatement stmt = con.prepareStatement(sql);) {
+		Connection connection = pool.getConnection();
+		try (PreparedStatement stmt = connection.prepareStatement(sql);) {
+
 			stmt.setString(1, coup.getTitle());
 			stmt.setDate(2, coup.getStartDate());
 			stmt.setDate(3, coup.getEndDate());
@@ -103,39 +108,45 @@ public class CouponDao implements ICouponDao {
 			stmt.setLong(9, coup.getCompId());
 			stmt.setLong(10, coup.getId());
 			stmt.executeUpdate();
+
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
+
 		} finally {
-			pool.returnConnection(con);
+			pool.returnConnection(connection);
 		}
 	}
 
 	@Override
 	public Coupon getCoupon(Long id) throws ApplicationException {
+
 		Coupon coupon = null;
 		String sql = "SELECT * FROM coupon WHERE coup_id=?";
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
 		ResultSet resultSet = null;
 		try {
+
 			connection = pool.getConnection();
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setLong(1, id);
 			resultSet = preparedStatement.executeQuery();
 			if (resultSet.next()) {
 				coupon = Extractor.extractCouponFromResultSet(resultSet);
-				return coupon;
 			}
+			return coupon;
 
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
+		} finally {
+			UtilSQLcloser.SQLCloser(preparedStatement);
+			pool.returnConnection(connection);
 		}
-		throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
-
 	}
 
 	@Override
 	public Collection<Coupon> getAllCoupons() throws ApplicationException {
+
 		Collection<Coupon> collection = new ArrayList<Coupon>();
 		String sql = "SELECT * FROM coupon";
 		Connection con = pool.getConnection();
@@ -145,20 +156,18 @@ public class CouponDao implements ICouponDao {
 				coupon = Extractor.extractCouponFromResultSet(resultSet);
 				collection.add(coupon);
 			}
-			if (!collection.isEmpty()) {
-				return collection;
-			}
+			return collection;
 
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 		} finally {
 			pool.returnConnection(con);
 		}
-		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 
 	@Override
 	public Collection<Coupon> getCouponByType(CouponType type) throws ApplicationException {
+
 		Collection<Coupon> collection = new ArrayList<Coupon>();
 		String sql = "SELECT * FROM coupon WHERE type=?";
 		Connection connection = null;
@@ -174,9 +183,7 @@ public class CouponDao implements ICouponDao {
 				coupon = Extractor.extractCouponFromResultSet(resultSet);
 				collection.add(coupon);
 			}
-			if (!collection.isEmpty()) {
 				return collection;
-			}
 
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.NO_COUPONS);
@@ -184,26 +191,30 @@ public class CouponDao implements ICouponDao {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
-		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 
 	@Override
 	public void customerPurchaseCoupon(Long coupId, Long custId) throws ApplicationException {
+
 		String sql = "INSERT INTO customer_coupon VALUES(?, ?)";
 		Connection connection = pool.getConnection();
 		try (PreparedStatement preparedStatement = connection.prepareStatement(sql);) {
+
 			preparedStatement.setLong(1, custId);
 			preparedStatement.setLong(2, coupId);
 			preparedStatement.executeUpdate();
+
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.CUSTOMER_OWNS_COUPON);
+
 		} finally {
 			pool.returnConnection(connection);
 		}
 	}
 
 	@Override
-	public void removeCouponCust(Long id) throws ApplicationException {
+	public void removeCouponFromCustomerTable(Long id) throws ApplicationException {
+
 		String sql = "DELETE FROM customer_coupon WHERE coup_id=?";
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
@@ -212,8 +223,10 @@ public class CouponDao implements ICouponDao {
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setLong(1, id);
 			preparedStatement.executeUpdate();
+
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
+
 		} finally {
 			pool.returnConnection(connection);
 			UtilSQLcloser.SQLCloser(preparedStatement);
@@ -222,44 +235,53 @@ public class CouponDao implements ICouponDao {
 	}
 
 	@Override
-	public void removeCouponCoup(Long id) throws ApplicationException {
+	public void removeCouponFromCouponTable(Long id) throws ApplicationException {
+
 		String sql = "DELETE FROM coupon WHERE coup_id=?";
-		Connection con = pool.getConnection();
-		try (PreparedStatement preparedStatement = con.prepareStatement(sql);) {
+		Connection connection = pool.getConnection();
+		try (PreparedStatement preparedStatement = connection.prepareStatement(sql);) {
+
 			preparedStatement.setLong(1, id);
 			preparedStatement.executeUpdate();
+
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
+
 		} finally {
-			pool.returnConnection(con);
+			pool.returnConnection(connection);
 		}
 
 	}
 
 	@Override
 	public Collection<Long> getAllExpiredCoupons() throws ApplicationException {
+
 		ArrayList<Long> list = new ArrayList<>();
 		Date date1 = new Date(System.currentTimeMillis());
 		String sql = "SELECT coup_id FROM coupon WHERE end_date < '" + date1 + "'";
-		Connection con = ConnectionPool.getPool().getConnection();
-		try (Statement stmt = con.createStatement(); ResultSet rs = stmt.executeQuery(sql);) {
+		Connection connection = ConnectionPool.getPool().getConnection();
+		// There is no use of a preparedStatement here becuase this method is not used
+		// outside the serverside
+		try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);) {
+
 			while (rs.next()) {
 				list.add(rs.getLong("coup_id"));
 			}
+
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.SYSTEM_FAILFURE);
+
 		} finally {
-			pool.returnConnection(con);
+			pool.returnConnection(connection);
 		}
 		return list;
 	}
 
 	@Override
 	public Collection<Coupon> getAllCouponsForCompany(Long compId) throws ApplicationException {
+
 		Collection<Coupon> collection = new ArrayList<Coupon>();
 		String sql = "SELECT * FROM coupon WHERE comp_id=?";
-//		String sql = "SELECT company_coupon.coup_id FROM company_coupon INNER JOIN coupon"
-//				+ " ON coupon.coup_id=company_coupon.coup_id" + " WHERE comp_id=?";
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
 		ResultSet resultSet = null;
@@ -278,6 +300,7 @@ public class CouponDao implements ICouponDao {
 
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.NO_COUPONS);
+
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
@@ -286,11 +309,13 @@ public class CouponDao implements ICouponDao {
 
 	@Override
 	public Collection<Coupon> getCouponByPrice(double price) throws ApplicationException {
+
 		Collection<Coupon> collection = new ArrayList<Coupon>();
 		String sql = "SELECT * FROM coupon WHERE price<=?";
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
 		ResultSet resultSet = null;
+
 		try {
 			connection = pool.getConnection();
 			preparedStatement = connection.prepareStatement(sql);
@@ -301,17 +326,15 @@ public class CouponDao implements ICouponDao {
 				coupon = Extractor.extractCouponFromResultSet(resultSet);
 				collection.add(coupon);
 			}
-			if (!collection.isEmpty()) {
-				return collection;
-			}
+			return collection;
 
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.NO_COUPONS);
+
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
-		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 
 	@Override
@@ -332,17 +355,15 @@ public class CouponDao implements ICouponDao {
 				coupon = Extractor.extractCouponFromResultSet(resultSet);
 				collection.add(coupon);
 			}
-			if (!collection.isEmpty()) {
-				return collection;
-			}
+			return collection;
 
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.NO_COUPONS);
+
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
-		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 
 	@Override
@@ -376,9 +397,7 @@ public class CouponDao implements ICouponDao {
 					list.add(coupon);
 				}
 			}
-			if (!list.isEmpty()) {
-				return list;
-			}
+			return list;
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 
@@ -387,7 +406,6 @@ public class CouponDao implements ICouponDao {
 			UtilSQLcloser.SQLCloser(preparedStatement2);
 			pool.returnConnection(connection);
 		}
-		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 
 	@Override
@@ -410,16 +428,14 @@ public class CouponDao implements ICouponDao {
 				coupon = Extractor.extractCouponFromResultSet(resultSet);
 				list.add(coupon);
 			}
-			if (!list.isEmpty()) {
-				return list;
-			}
+			return list;
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.NO_COUPONS);
+
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
-		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 
 	@Override
@@ -441,16 +457,13 @@ public class CouponDao implements ICouponDao {
 				coupon = Extractor.extractCouponFromResultSet(resultSet);
 				list.add(coupon);
 			}
-			if (!list.isEmpty()) {
-				return list;
-			}
+			return list;
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
-		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 
 	@Override
@@ -481,10 +494,9 @@ public class CouponDao implements ICouponDao {
 					coupon = Extractor.extractCouponFromResultSet(resultSet);
 					list.add(coupon);
 				}
-				if (!list.isEmpty()) {
-					return list;
-				}
 			}
+			return list;
+
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 
@@ -492,7 +504,6 @@ public class CouponDao implements ICouponDao {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
-		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 
 	@Override
@@ -513,19 +524,13 @@ public class CouponDao implements ICouponDao {
 				coupon = Extractor.extractCouponFromResultSet(resultSet);
 				collection.add(coupon);
 			}
-			if (!collection.isEmpty()) {
-				return collection;
-			}
+			return collection;
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
 		}
-		if (!collection.isEmpty()) {
-			return collection;
-		}
-		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 
 	@Override
@@ -540,8 +545,10 @@ public class CouponDao implements ICouponDao {
 			preparedStatement.setLong(1, id);
 			resultSet = preparedStatement.executeQuery();
 			return resultSet.next();
+
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
+
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
@@ -560,8 +567,10 @@ public class CouponDao implements ICouponDao {
 			preparedStatement.setLong(1, compId);
 			resultSet = preparedStatement.executeQuery();
 			return (resultSet.next());
+
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
+
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
@@ -579,9 +588,11 @@ public class CouponDao implements ICouponDao {
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setLong(1, custId);
 			resultSet = preparedStatement.executeQuery();
-			return (resultSet.next());
+			return resultSet.next();
+
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
+
 		} finally {
 			UtilSQLcloser.SQLCloser(preparedStatement);
 			pool.returnConnection(connection);
@@ -669,9 +680,7 @@ public class CouponDao implements ICouponDao {
 					collection.add(coupon);
 				}
 			}
-			if (!collection.isEmpty()) {
-				return collection;
-			}
+			return collection;
 
 		} catch (SQLException e) {
 			throw new ApplicationException(ErrorTypes.NO_COUPONS);
@@ -680,6 +689,5 @@ public class CouponDao implements ICouponDao {
 			UtilSQLcloser.SQLCloser(preparedStatement2);
 			pool.returnConnection(connection);
 		}
-		throw new ApplicationException(ErrorTypes.NO_COUPONS);
 	}
 }

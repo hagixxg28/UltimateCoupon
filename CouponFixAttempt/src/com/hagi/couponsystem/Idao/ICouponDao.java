@@ -15,9 +15,9 @@ public interface ICouponDao {
 
 	void fullyRemoveCoupon(Long id) throws ApplicationException;
 
-	void removeCouponCust(Long id) throws ApplicationException;
+	void removeCouponFromCustomerTable(Long id) throws ApplicationException;
 
-	void removeCouponCoup(Long id) throws ApplicationException;
+	void removeCouponFromCouponTable(Long id) throws ApplicationException;
 
 	void updateCoupon(Coupon coup) throws ApplicationException;
 	

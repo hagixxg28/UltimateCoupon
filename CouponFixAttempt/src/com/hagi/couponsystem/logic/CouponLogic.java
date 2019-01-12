@@ -34,17 +34,21 @@ public class CouponLogic {
 
 	public void createCoupon(Coupon coup) throws ApplicationException {
 		if (compDb.companyExists(coup.getCompId())) {
+
 			if (!coupDb.companyHasCoupons(coup.getCompId())) {
 				coupDb.createCoupon(coup);
 				return;
 			}
+
 			Collection<Coupon> List;
 			List = coupDb.getAllCouponsForCompany(coup.getCompId());
+
 			for (Coupon coupon : List) {
 				if (coupon.getTitle().equals(coup.getTitle())) {
 					throw new ApplicationException(ErrorTypes.SAME_TITLE);
 				}
 			}
+
 			coupDb.createCoupon(coup);
 			return;
 		}
@@ -53,6 +57,7 @@ public class CouponLogic {
 	}
 
 	public void removeCoupon(Long coupId) throws ApplicationException {
+
 		if (coupDb.couponExists(coupId)) {
 			coupDb.fullyRemoveCoupon(coupId);
 			return;
@@ -60,29 +65,39 @@ public class CouponLogic {
 		throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
 	}
 
-	public void updateCoupon(Coupon coup) throws ApplicationException {
-		Coupon updateCoupon = coupDb.getCoupon(coup.getId());
-		Validator.validateAndSetCoupon(coup, updateCoupon);
-		Collection<Coupon> List;
-		List = coupDb.getAllCouponsForCompany(updateCoupon.getCompId());
+	public void updateCoupon(Coupon coupon) throws ApplicationException {
+		if (coupDb.couponExists(coupon.getId())) {
+			Coupon updateCoupon = coupDb.getCoupon(coupon.getId());
+			Validator.validateAndSetCoupon(coupon, updateCoupon);
 
-		for (Coupon coupon : List) {
-			if (coupon.getTitle().equals(coup.getTitle()) && coupon.getId() != coup.getId()) {
-				throw new ApplicationException(ErrorTypes.SAME_TITLE);
+			Collection<Coupon> List;
+			List = coupDb.getAllCouponsForCompany(updateCoupon.getCompId());
+
+			for (Coupon coup : List) {
+				if (coup.getTitle().equals(coup.getTitle()) && coup.getId() != coup.getId()) {
+					throw new ApplicationException(ErrorTypes.SAME_TITLE);
+				}
 			}
+			coupDb.updateCoupon(updateCoupon);
+			return;
 		}
-		coupDb.updateCoupon(updateCoupon);
-		return;
+		throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
 
 	}
 
 	public Coupon getCoupon(Long coupId) throws ApplicationException {
-		return coupDb.getCoupon(coupId);
+		if (coupDb.couponExists(coupId)) {
+			return coupDb.getCoupon(coupId);
+		}
+		throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
 	}
 
 	public Collection<Coupon> getAllCouponForCompany(Long compId) throws ApplicationException {
 		if (compDb.companyExists(compId)) {
-			return coupDb.getAllCouponsForCompany(compId);
+			if (coupDb.companyHasCoupons(compId)) {
+				return coupDb.getAllCouponsForCompany(compId);
+			}
+			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 		}
 		throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 	}
@@ -90,7 +105,9 @@ public class CouponLogic {
 	public Collection<Coupon> getAllCouponByTypeForcompany(CouponType type, Long compId) throws ApplicationException {
 		if (CouponType.typeValidator(type)) {
 			if (compDb.companyExists(compId)) {
-				return coupDb.getCouponByTypeForCompany(type, compId);
+				Collection<Coupon> list = coupDb.getCouponByTypeForCompany(type, compId);
+				Validator.validateCollectionCoupon(list);
+				return list;
 			}
 			throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 		}
@@ -98,50 +115,73 @@ public class CouponLogic {
 	}
 
 	public Collection<Coupon> getAllCouponByPriceForCompany(double price, Long compId) throws ApplicationException {
+		Validator.priceValidator(price);
 		if (compDb.companyExists(compId)) {
-			return coupDb.getCouponByPriceForCompany(price, compId);
+			Collection<Coupon> list = coupDb.getCouponByPriceForCompany(price, compId);
+			Validator.validateCollectionCoupon(list);
+			return list;
 		}
 		throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 	}
 
 	public Collection<Coupon> getAllCouponByDateForCompany(Date date, Long compId) throws ApplicationException {
+		Validator.endDateValidaotr(date);
 		if (compDb.companyExists(compId)) {
-			return coupDb.getCouponByDateForCompany(date, compId);
+			Collection<Coupon> list = coupDb.getCouponByDateForCompany(date, compId);
+			Validator.validateCollectionCoupon(list);
+			return list;
 		}
 		throw new ApplicationException(ErrorTypes.COMPANY_DOSENT_EXIST);
 	}
 
 	public Collection<Coupon> getAllCoupon() throws ApplicationException {
-		return coupDb.getAllCoupons();
+		Collection<Coupon> list = coupDb.getAllCoupons();
+		Validator.validateCollectionCoupon(list);
+		// This makes sure not to return coupons that are sold out but still held by
+		// users
+		Validator.amountValidatorAndCollectionCleaner(list);
+		return list;
 	}
 
 	public Collection<Coupon> getAllCouponByType(CouponType type) throws ApplicationException {
 		if (CouponType.typeValidator(type)) {
-			return coupDb.getCouponByType(type);
+			Collection<Coupon> list = coupDb.getCouponByType(type);
+			Validator.validateCollectionCoupon(list);
+			Validator.amountValidatorAndCollectionCleaner(list);
+			return list;
 		}
 		throw new ApplicationException(ErrorTypes.INVALID_TYPE);
 	}
 
 	public Collection<Coupon> getAllCouponByPrice(double price) throws ApplicationException {
-		return coupDb.getCouponByPrice(price);
+		Validator.priceValidator(price);
+		Collection<Coupon> list = coupDb.getCouponByPrice(price);
+		Validator.validateCollectionCoupon(list);
+		Validator.amountValidatorAndCollectionCleaner(list);
+		return list;
 	}
 
 	public Collection<Coupon> getAllCouponByDate(Date date) throws ApplicationException {
-		return coupDb.getCouponByDate(date);
+		Validator.endDateValidaotr(date);
+		Collection<Coupon> list = coupDb.getCouponByDate(date);
+		Validator.validateCollectionCoupon(list);
+		Validator.amountValidatorAndCollectionCleaner(list);
+		return list;
 	}
 
 	public void purchaseCoupon(Long couponId, Long customerId) throws ApplicationException {
 		Coupon coup = null;
-		coup = coupDb.getCoupon(couponId);
+		if (coupDb.couponExists(couponId)) {
 
-		if (coup.getAmount() <= 0) {
-			throw new ApplicationException(ErrorTypes.OUT_OF_COUPONS);
-		}
+			coup = coupDb.getCoupon(couponId);
 
-		if (custDb.customerExists(customerId)) {
-			if (coupDb.customerHasCoupons(customerId)) {
-				Collection<Coupon> coupons = coupDb.getCouponsForCustomer(customerId);
-				if (!coupons.isEmpty()) {
+			if (coup.getAmount() <= 0) {
+				throw new ApplicationException(ErrorTypes.OUT_OF_COUPONS);
+			}
+
+			if (custDb.customerExists(customerId)) {
+				if (coupDb.customerHasCoupons(customerId)) {
+					Collection<Coupon> coupons = coupDb.getCouponsForCustomer(customerId);
 
 					for (Coupon coupon : coupons) {
 						if (coupon.getId() == coup.getId()) {
@@ -149,13 +189,14 @@ public class CouponLogic {
 						}
 					}
 				}
+				coupDb.customerPurchaseCoupon(couponId, customerId);
+				coup.setAmount(coup.getAmount() - 1);
+				coupDb.updateCoupon(coup);
+				return;
 			}
-			coupDb.customerPurchaseCoupon(couponId, customerId);
-			coup.setAmount(coup.getAmount() - 1);
-			coupDb.updateCoupon(coup);
-			return;
+			throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
 		}
-		throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
+		throw new ApplicationException(ErrorTypes.COUPON_DOSENT_EXIST);
 
 	}
 
@@ -163,8 +204,12 @@ public class CouponLogic {
 			throws ApplicationException {
 		if (CouponType.typeValidator(type)) {
 			if (custDb.customerExists(customerId)) {
-				return coupDb.getCouponByTypeForCustomer(type, customerId);
+
+				Collection<Coupon> list = coupDb.getCouponByTypeForCustomer(type, customerId);
+				Validator.validateCollectionCoupon(list);
+				return list;
 			}
+
 			throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
 		}
 		throw new ApplicationException(ErrorTypes.INVALID_TYPE);
@@ -172,22 +217,32 @@ public class CouponLogic {
 
 	public Collection<Coupon> getAllCouponByPriceForCustomer(double price, Long customerId)
 			throws ApplicationException {
+
+		Validator.priceValidator(price);
 		if (custDb.customerExists(customerId)) {
-			return coupDb.getCouponByPriceForCustomer(price, customerId);
+			Collection<Coupon> list = coupDb.getCouponByPriceForCustomer(price, customerId);
+			Validator.validateCollectionCoupon(list);
+			return list;
 		}
 		throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
 	}
 
 	public Collection<Coupon> getAllCouponByDateForCustomer(Date date, Long custId) throws ApplicationException {
+		Validator.endDateValidaotr(date);
 		if (custDb.customerExists(custId)) {
-			return coupDb.getCouponByDateForCustomer(date, custId);
+			Collection<Coupon> list = coupDb.getCouponByDateForCustomer(date, custId);
+			Validator.validateCollectionCoupon(list);
+			return list;
 		}
 		throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
 	}
 
 	public Collection<Coupon> getAllCouponForCustomer(Long custId) throws ApplicationException {
 		if (custDb.customerExists(custId)) {
-			return coupDb.getCouponsForCustomer(custId);
+			if (coupDb.customerHasCoupons(custId)) {
+				return coupDb.getCouponsForCustomer(custId);
+			}
+			throw new ApplicationException(ErrorTypes.NO_COUPONS);
 		}
 		throw new ApplicationException(ErrorTypes.CUSTOMER_DOSENT_EXIST);
 	}
