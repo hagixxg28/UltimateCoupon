@@ -2,6 +2,7 @@ package com.hagi.couponsystem.Utils;
 
 import java.sql.Date;
 import java.util.Collection;
+import java.util.Iterator;
 
 import com.hagi.couponsystem.Enums.CouponType;
 import com.hagi.couponsystem.Enums.ErrorTypes;
@@ -127,9 +128,11 @@ public class Validator {
 	}
 
 	public static void amountValidatorAndCollectionCleaner(Collection<Coupon> collection) {
-		for (Coupon coupon : collection) {
-			if (coupon.getAmount() <= 0) {
-				collection.remove(coupon);
+
+		for (Iterator<Coupon> iterator = collection.iterator(); iterator.hasNext();) {
+			Coupon value = iterator.next();
+			if (value.getAmount() <= 0) {
+				iterator.remove();
 			}
 		}
 	}

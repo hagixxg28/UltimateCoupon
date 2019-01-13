@@ -10,7 +10,6 @@ public class CouponSystem {
 	private Thread thread = new Thread(task);
 
 	private CouponSystem() {
-		System.out.println("got coup sys");
 		ConnectionPool.getPool();
 		thread.start();
 	}
