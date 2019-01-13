@@ -5,7 +5,7 @@ import com.hagi.couponsystem.thread.DailyCouponExpirationTask;
 
 public class CouponSystem {
 	// Eager Singletone
-	private static CouponSystem coupSys = new CouponSystem();
+	public static CouponSystem coupSys = new CouponSystem();
 	private DailyCouponExpirationTask task = new DailyCouponExpirationTask();
 	private Thread thread = new Thread(task);
 
